@@ -81,7 +81,7 @@ extern VOID StrReplaceSection(PCHAR szInsert,DWORD Length,PCHAR szNewString);
 bool ExecuteISCommand(char *Command, char *Parameters=0)
 {
 	char Temp[4096]={0};
-	if (!strchr(Command,':') && !pISInterface->IsAlias(Command) && !pISInterface->ResolveCommand(Command,Temp,sizeof(Temp)))
+	if (!strchr(Command,':') && !pISInterface->IsAlias(Command) && !pISInterface->ResolveAtom(Command) && !pISInterface->ResolveCommand(Command,Temp,sizeof(Temp)))
 	{
 		return false;
 	}
@@ -179,66 +179,38 @@ int CMD_EQExecute(int argc, char *argv[])
 	return 0;
 }
 
-/*
-
-int CMD_EQAlias(int argc, char *argv[])
+VOID HideDoCommand(PSPAWNINFO pChar, PCHAR szLine, BOOL delayed)
 {
-	if (argc<2)
-	{
-		WriteChatf("Syntax: %s -list|-delete <name>|<replace> <with>",argv[0]);
-		return 0;
-	}
-
-	if (!stricmp(argv[1],"-list"))
-	{
-		WriteChatf("Registered EQ Aliases");
-		WriteChatf("---------------------");
-		for(map<string,PISXEQALIAS>::iterator i = ISXEQAliases.begin();i != ISXEQAliases.end();i++)
-		{
-			if (PISXEQALIAS pAlias=i->second)
-			{
-				WriteChatf("[%s] %s",i->first,pAlias->Replacement);
-			}
-		}
-	}
-	else if (argc>=3)
-	{
-		if (!stricmp(argv[1],"-delete"))
-		{
-			RemoveISXEQAlias(argv[1]);
-		}
-		else
-		{
-			char FullCommand[8192]={0};
-			pISInterface->GetArgs(2,argc,argv,FullCommand);
-			AddISXEQAlias(argv[1],FullCommand);
-			if (PISXEQALIAS pAlias=FindISXEQAlias(argv[1]))
-			{
-				WriteChatf("[%s] %s",argv[1],pAlias->Replacement);
-			}
-			else
-				WriteChatf("ISXEQ Alias NOT added");
-		}
-	}
-	else
-	{
-		printf("Syntax: %s -list|-delete <name>|<replace> <with>",argv[0]);
-	}
-	return 0;
+	pEverQuest->InterpretCmd((EQPlayer*)pChar,szLine);
 }
-/**/
+
 
 void InitializeMQ2Commands()
 {
-	EzDetour(CEverQuest__InterpretCmd,CCommandHook::Detour,CCommandHook::Trampoline);
-
-//	pISInterface->AddCommand("EQExecute",CMD_EQExecute);
+	EzDetour(CEverQuest__InterpretCmd,&CCommandHook::Detour,&CCommandHook::Trampoline);
 
 #define COMMAND(name,cmd,parse,hide) pISInterface->AddCommand(name,cmd,parse,hide)
 #include "ISXEQCommandList.h"
 #undef COMMAND
 
-
+   pISInterface->AddAlias("d","EQExecute /duel");
+   pISInterface->AddAlias("t","EQExecute /tell");
+   pISInterface->AddAlias("w","EQExecute /who");
+   pISInterface->AddAlias("a","EQExecute /anonymous");
+   pISInterface->AddAlias("ta","EQExecute /tap");
+   pISInterface->AddAlias("c","EQExecute /consider");
+   pISInterface->AddAlias("cha","EQExecute /channel");
+   pISInterface->AddAlias("f","EQExecute /feedback");
+   pISInterface->AddAlias("fa","EQExecute /fastdrop");
+   pISInterface->AddAlias("m","EQExecute /msg");
+   pISInterface->AddAlias("load","EQExecute /loadspells");
+   pISInterface->AddAlias("b","EQExecute /bazaar");
+   pISInterface->AddAlias("ba","EQExecute /bazaar");
+   pISInterface->AddAlias("g","EQExecute /gsay");
+   pISInterface->AddAlias("gu","EQExecute /guildsay");
+   pISInterface->AddAlias("key","EQExecute /keys");
+   pISInterface->AddAlias("r","EQExecute /reply");
+   pISInterface->AddAlias("time","EQExecute /time");
 }
 
 void ShutdownMQ2Commands()
@@ -249,15 +221,5 @@ void ShutdownMQ2Commands()
 
 	EzUnDetour(CEverQuest__InterpretCmd);
 
-	/*
-	for(map<string,PISXEQALIAS>::iterator i = ISXEQAliases.begin();i != ISXEQAliases.end();i++)
-	{
-		if (PISXEQALIAS pAlias=i->second)
-		{
-			delete pAlias;
-		}
-	}
-	ISXEQAliases.clear();
-	/**/
 }
 

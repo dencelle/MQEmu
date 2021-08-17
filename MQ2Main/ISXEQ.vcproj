@@ -29,7 +29,7 @@
 				AdditionalIncludeDirectories=""
 				PreprocessorDefinitions="EQLIB_EXPORTS;CINTERFACE;ISXEQ"
 				StringPooling="TRUE"
-				ExceptionHandling="TRUE"
+				ExceptionHandling="FALSE"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="0"
 				StructMemberAlignment="1"
@@ -95,9 +95,6 @@
 				RelativePath="ISXEQ\ISXEQDataTypes.cpp">
 			</File>
 			<File
-				RelativePath="ISXEQ\ISXEQPulse.cpp">
-			</File>
-			<File
 				RelativePath="ISXEQ\ISXEQServices.cpp">
 			</File>
 			<File
@@ -122,6 +119,9 @@
 					RelativePath="MQ2CleanUI.cpp">
 				</File>
 				<File
+					RelativePath="MQ2Commands.cpp">
+				</File>
+				<File
 					RelativePath="MQ2Data.cpp">
 				</File>
 				<File
@@ -137,10 +137,16 @@
 					RelativePath="MQ2KeyBinds.cpp">
 				</File>
 				<File
+					RelativePath="MQ2MacroCommands.cpp">
+				</File>
+				<File
 					RelativePath="MQ2Main.cpp">
 				</File>
 				<File
 					RelativePath="MQ2Mouse.cpp">
+				</File>
+				<File
+					RelativePath="MQ2Pulse.cpp">
 				</File>
 				<File
 					RelativePath="MQ2Spawns.cpp">
@@ -158,6 +164,9 @@
 			Filter="h;hpp;hxx;hm;inl;inc">
 			<File
 				RelativePath="ISXEQ\ISXEQ.h">
+			</File>
+			<File
+				RelativePath="..\ISXEQClient.h">
 			</File>
 			<File
 				RelativePath="ISXEQ\ISXEQCommandList.h">

@@ -27,6 +27,29 @@
 namespace MQ2Globals
 {
 
+struct _actordefentry ActorDefList[] = {
+    10645, "Book",
+    10646, "Book",
+    10714, "Augmentation Sealer",
+    10800, "Pottery Wheel",
+    10801, "Kiln",
+    10802, "Loom",
+    10803, "Oven",
+    10804, "Forge",
+    10805, "Brewing Barrel",
+    10807, "Bottle",
+    10863, "Forge",
+    10864, "Forge",
+    10865, "Oven",
+    11056, "Leaf Pile",
+    11058, "Bones",
+    11059, "Books",
+    11060, "Leaf",
+    11062, "Please report this",
+    11064, "Rock",
+    11073, "Books",
+    0, "NULL"
+    };
 
 /* BENCHMARKS */
 DWORD bmWriteChatColor=0;
@@ -91,16 +114,17 @@ CHAR gszLastSyntaxError[MAX_STRING] = {0};
 CHAR gszLastMQ2DataError[MAX_STRING] = {0};
 
 PSPAWNINFO pNamingSpawn=0;
-CHAR gszSpawnPlayerName[5][MAX_STRING]={
+CHAR gszSpawnPlayerName[7][MAX_STRING]={
 "",//0
-"${If[${NamingSpawn.Mark},${NamingSpawn.Mark} - ,]}${If[${NamingSpawn.Trader},Trader ,]}${If[${NamingSpawn.Invis},(${NamingSpawn.DisplayName}),${NamingSpawn.DisplayName}]}${If[${NamingSpawn.AFK}, AFK,]}${If[${NamingSpawn.Linkdead}, LD,]}${If[${NamingSpawn.LFG}, LFG,]}${If[${NamingSpawn.GroupLeader}, LDR,]}",//1
-"${If[${NamingSpawn.Mark},${NamingSpawn.Mark} - ,]}${If[${NamingSpawn.Trader},Trader ,]}${If[${NamingSpawn.Invis},(${NamingSpawn.DisplayName}),${NamingSpawn.DisplayName}]}${If[${NamingSpawn.Surname.Length}, ${NamingSpawn.Surname},]}${If[${NamingSpawn.AFK}, AFK,]}${If[${NamingSpawn.Linkdead}, LD,]}${If[${NamingSpawn.LFG}, LFG,]}${If[${NamingSpawn.GroupLeader}, LDR,]}",//2
-"${If[${NamingSpawn.Mark},${NamingSpawn.Mark} - ,]}${If[${NamingSpawn.Trader},Trader ,]}${If[${NamingSpawn.Invis},(${NamingSpawn.DisplayName}),${NamingSpawn.DisplayName}]}${If[${NamingSpawn.Surname.Length}, ${NamingSpawn.Surname},]}${If[${NamingSpawn.AFK}, AFK,]}${If[${NamingSpawn.Linkdead}, LD,]}${If[${NamingSpawn.LFG}, LFG,]}${If[${NamingSpawn.GroupLeader}, LDR,]}${If[${NamingSpawn.Guild.Length},\n<${If[${NamingSpawn.GuildStatus.NotEqual[member]},${NamingSpawn.GuildStatus} of ,]}${NamingSpawn.Guild}>,]}",//3
-"${If[${NamingSpawn.Mark},${NamingSpawn.Mark} - ,]}${If[${NamingSpawn.Trader},Trader ,]}${If[${NamingSpawn.AARank},${NamingSpawn.AATitle} ,]}${If[${NamingSpawn.Invis},(${NamingSpawn.DisplayName}),${NamingSpawn.DisplayName}]}${If[${NamingSpawn.Surname.Length}, ${NamingSpawn.Surname},]}${If[${NamingSpawn.AFK}, AFK,]}${If[${NamingSpawn.Linkdead}, LD,]}${If[${NamingSpawn.LFG}, LFG,]}${If[${NamingSpawn.GroupLeader}, LDR,]}${If[${NamingSpawn.Guild.Length},\n<${If[${NamingSpawn.GuildStatus.NotEqual[member]},${NamingSpawn.GuildStatus} of ,]}${NamingSpawn.Guild}>,]}",//4
-}
-;
-CHAR gszSpawnNPCName[MAX_STRING]="${If[${NamingSpawn.Mark},${NamingSpawn.Mark} - ,]}${If[${NamingSpawn.Assist},>> ,]}${NamingSpawn.DisplayName}${If[${NamingSpawn.Assist}, - ${NamingSpawn.PctHPs}%<<,]}${If[${NamingSpawn.Surname.Length},\n(${NamingSpawn.Surname}),]}";
-CHAR gszSpawnPetName[MAX_STRING]="${If[${NamingSpawn.Mark},${NamingSpawn.Mark} - ,]}${If[${NamingSpawn.Assist},>> ,]}${NamingSpawn.DisplayName}${If[${NamingSpawn.Assist}, - ${NamingSpawn.PctHPs}%<<,]}${If[${NamingSpawn.Master.Type.Equal[PC]},\n(${NamingSpawn.Master}),]}";
+"${If[${NamingSpawn.Mark},\"${NamingSpawn.Mark} - \",]}${If[${NamingSpawn.Trader},\"Trader \",]}${If[${NamingSpawn.Invis},(${NamingSpawn.DisplayName}),${NamingSpawn.DisplayName}]}${If[${NamingSpawn.AFK},\" AFK\",]}${If[${NamingSpawn.Linkdead},\" LD\",]}${If[${NamingSpawn.LFG},\" LFG\",]}${If[${NamingSpawn.GroupLeader},\" LDR\",]}",//1
+"${If[${NamingSpawn.Mark},\"${NamingSpawn.Mark} - \",]}${If[${NamingSpawn.Trader},\"Trader \",]}${If[${NamingSpawn.Invis},(${NamingSpawn.DisplayName}),${NamingSpawn.DisplayName}]}${If[${NamingSpawn.Surname.Length},\" ${NamingSpawn.Surname}\",]}${If[${NamingSpawn.AFK},\" AFK\",]}${If[${NamingSpawn.Linkdead},\" LD\",]}${If[${NamingSpawn.LFG},\" LFG\",]}${If[${NamingSpawn.GroupLeader},\" LDR\",]}",//2
+"${If[${NamingSpawn.Mark},\"${NamingSpawn.Mark} - \",]}${If[${NamingSpawn.Trader},\"Trader \",]}${If[${NamingSpawn.Invis},(${NamingSpawn.DisplayName}),${NamingSpawn.DisplayName}]}${If[${NamingSpawn.Surname.Length},\" ${NamingSpawn.Surname}\",]}${If[${NamingSpawn.AFK},\" AFK\",]}${If[${NamingSpawn.Linkdead},\" LD\",]}${If[${NamingSpawn.LFG},\" LFG\",]}${If[${NamingSpawn.GroupLeader},\" LDR\",]}${If[${NamingSpawn.Guild.Length},\n<${If[${NamingSpawn.GuildStatus.NotEqual[member]},\"${NamingSpawn.GuildStatus} of \",]}${NamingSpawn.Guild}>,]}",//3
+"${If[${NamingSpawn.Mark},\"${NamingSpawn.Mark} - \",]}${If[${NamingSpawn.Trader},\"Trader \",]}${If[${NamingSpawn.AARank},\"${NamingSpawn.AATitle} \",]}${If[${NamingSpawn.Invis},(${NamingSpawn.DisplayName}),${NamingSpawn.DisplayName}]}${If[${NamingSpawn.Surname.Length},\" ${NamingSpawn.Surname}\",]}${If[${NamingSpawn.Suffix.Length},\" ${NamingSpawn.Suffix}\",]}${If[${NamingSpawn.AFK},\" AFK\",]}${If[${NamingSpawn.Linkdead},\" LD\",]}${If[${NamingSpawn.LFG},\" LFG\",]}${If[${NamingSpawn.GroupLeader},\" LDR\",]}${If[${NamingSpawn.Guild.Length},\n<${If[${NamingSpawn.GuildStatus.NotEqual[member]},\"${NamingSpawn.GuildStatus} of \",]}${NamingSpawn.Guild}>,]}",//4
+"${If[${NamingSpawn.Mark},\"${NamingSpawn.Mark} - \",]}${If[${NamingSpawn.Trader},\"Trader \",]}${If[${NamingSpawn.AARank},\"${NamingSpawn.AATitle} \",]}${If[${NamingSpawn.Invis},(${NamingSpawn.DisplayName}),${NamingSpawn.DisplayName}]}${If[${NamingSpawn.Suffix.Length},\" ${NamingSpawn.Suffix}\",]}${If[${NamingSpawn.AFK},\" AFK\",]}${If[${NamingSpawn.Linkdead},\" LD\",]}${If[${NamingSpawn.LFG},\" LFG\",]}${If[${NamingSpawn.GroupLeader},\" LDR\",]}",//5
+"${If[${NamingSpawn.Mark},\"${NamingSpawn.Mark} - \",]}${If[${NamingSpawn.Trader},\"Trader \",]}${If[${NamingSpawn.AARank},\"${NamingSpawn.AATitle} \",]}${If[${NamingSpawn.Invis},(${NamingSpawn.DisplayName}),${NamingSpawn.DisplayName}]}${If[${NamingSpawn.Surname.Length},\" ${NamingSpawn.Surname}\",]}${If[${NamingSpawn.Suffix.Length},\" ${NamingSpawn.Suffix}\",]}${If[${NamingSpawn.AFK},\" AFK\",]}${If[${NamingSpawn.Linkdead},\" LD\",]}${If[${NamingSpawn.LFG},\" LFG\",]}${If[${NamingSpawn.GroupLeader},\" LDR\",]}",//6 
+};
+CHAR gszSpawnNPCName[MAX_STRING]="${If[${NamingSpawn.Mark},\"${NamingSpawn.Mark} - \",]}${If[${NamingSpawn.Assist},\">> \",]}${NamingSpawn.DisplayName}${If[${NamingSpawn.Assist},\" - ${NamingSpawn.PctHPs}%<<\",]}${If[${NamingSpawn.Surname.Length},\n(${NamingSpawn.Surname}),]}";
+CHAR gszSpawnPetName[MAX_STRING]="${If[${NamingSpawn.Mark},\"${NamingSpawn.Mark} - \",]}${If[${NamingSpawn.Assist},\">> \",]}${NamingSpawn.DisplayName}${If[${NamingSpawn.Assist},\" - ${NamingSpawn.PctHPs}%<<\",]}${If[${NamingSpawn.Master.Type.Equal[PC]},\n(${NamingSpawn.Master}),]}";
 CHAR gszSpawnCorpseName[MAX_STRING]="${NamingSpawn.DisplayName}'s corpse";
 
 DWORD DrawHUDParams[4]={0,0,0,0};
@@ -118,7 +142,9 @@ DWORD gEventChat = 0;
 DWORD gRunning = 0;
 BOOL gbMoving = FALSE;
 DWORD gMaxTurbo = 10;
+BOOL gReturn = TRUE;
 BOOL gInClick = FALSE;
+BOOL gbInZone = FALSE;
 BOOL gZoning = FALSE;
 BOOL WereWeZoning = TRUE;
 BOOL gbInDInput = FALSE;
@@ -139,6 +165,7 @@ BOOL gSpewToFile = FALSE;
 BOOL gbDoAutoRun = FALSE;
 BOOL gMQPauseOnChat = FALSE;
 BOOL gKeepKeys = FALSE;
+BOOL gLClickedObject = FALSE;
 SWHOFILTER gFilterSWho = {0};
 EQLIB_VAR BOOL gFilterMQ2DataErrors=FALSE;
 
@@ -153,7 +180,6 @@ BOOL bAllowCommandParse=TRUE;
 LONG gDelayZoning = 0;
 PALERTLIST gpAlertList = NULL;
 BOOL gMacroPause = FALSE;
-ACTORINFO EnviroActor = {0};
 SPAWNINFO EnviroTarget = {0};
 PGROUNDITEM pGroundTarget = NULL;
 SPAWNINFO DoorEnviroTarget = {0};
@@ -189,16 +215,16 @@ fEQCommand        cmdCast        =  NULL;
 
 fEQNewUIINI       NewUIINI   =  (fEQNewUIINI)__NewUIINI;
 fEQProcGameEvts   ProcessGameEvents = (fEQProcGameEvts)__ProcessGameEvents;
-fEQSendMessage    send_message = (fEQSendMessage)__SendMessage;
-fEQExecuteCmd	  ExecuteCmd = (fEQExecuteCmd)__ExecuteCmd;
-fEQGetMelee    get_melee_range = (fEQGetMelee)__get_melee_range;
+fEQExecuteCmd      ExecuteCmd = (fEQExecuteCmd)__ExecuteCmd;
+fEQGetMelee    get_melee_range = (fEQGetMelee)GetMeleeRange;
 fGetLabelFromEQ GetLabelFromEQ = (fGetLabelFromEQ)__GetLabelFromEQ;
 
 // EQ Address Initialization
-PSKILL *SkillDict=(PSKILL*)__SkillDict;
+_SKILLMGR **ppSkillMgr=(_SKILLMGR**)pinstSkillMgr;
 
 DWORD EQADDR_HWND=__HWnd;
 DWORD EQADDR_MEMCHECK0=__MemChecker0;
+DWORD EQADDR_MEMCHECK1=__MemChecker1;
 DWORD EQADDR_MEMCHECK2=__MemChecker2;
 DWORD EQADDR_MEMCHECK3=__MemChecker3;
 DWORD EQADDR_MEMCHECK4=__MemChecker4;
@@ -206,9 +232,6 @@ PCHAR EQADDR_SERVERHOST=(PCHAR)__ServerHost;
 PCHAR EQADDR_SERVERNAME=(PCHAR)__ServerName;
 DWORD EQADDR_CONVERTITEMTAGS=__ConvertItemTags;
 PCMDLIST EQADDR_CMDLIST=(PCMDLIST)__CommandList;
-
-PEQFRIENDSLIST pFriendsList=(PEQFRIENDSLIST)__FriendsList;
-PEQFRIENDSLIST pIgnoreList=(PEQFRIENDSLIST)__IgnoreList;
 
 PBYTE EQADDR_ATTACK=(PBYTE)__Attack;
 PBYTE EQADDR_NOTINCHATMODE=(PBYTE)__InChatMode;
@@ -221,7 +244,9 @@ DWORD *g_ppDrawHandler=(DWORD*)__DrawHandler;
 DWORD *gpShowNames=(DWORD*)__ShowNames;
 DWORD *gpPCNames=(DWORD*)__PCNames;
 PBYTE pTributeActive=(PBYTE)instTributeActive;
-
+PBYTE gpAutoFire=(PBYTE)__Autofire;
+PBYTE gpShiftKeyDown=(PBYTE)__ShiftKeyDown; // addr+1=ctrl, addr+2=alt
+DWORD *gpMouseEventTime = (DWORD*)__MouseEventTime;
 
 PVOID EQADDR_GWORLD=(PVOID)__gWorld;
 PDWORD EQADDR_DOABILITYLIST=(PDWORD)__DoAbilityList;
@@ -235,12 +260,15 @@ PCHAR szEQMappableCommands[nEQMappableCommands];
 map<string,unsigned long> ItemSlotMap;
 
 PBYTE EQADDR_ENCRYPTPAD0=(PBYTE)__EncryptPad0;
+PBYTE EQADDR_ENCRYPTPAD1=(PBYTE)__EncryptPad1;
 PBYTE EQADDR_ENCRYPTPAD2=(PBYTE)__EncryptPad2;
 PBYTE EQADDR_ENCRYPTPAD3=(PBYTE)__EncryptPad3;
 PBYTE EQADDR_ENCRYPTPAD4=(PBYTE)__EncryptPad4;
 
 DWORD *pScreenX=(DWORD*)__ScreenX;
 DWORD *pScreenY=(DWORD*)__ScreenY;
+DWORD *pScreenXMax=(DWORD*)__ScreenXMax;
+DWORD *pScreenYMax=(DWORD*)__ScreenYMax;
 DWORD *pScreenMode=(DWORD*)__ScreenMode;
 CHAR  *pMouseLook=(CHAR*)__MouseLook;
 PMOUSEINFO EQADDR_MOUSE=(PMOUSEINFO)__Mouse;
@@ -258,8 +286,7 @@ IDirectInputDevice8A **EQADDR_DIMOUSE=(IDirectInputDevice8A **)DI8__Mouse;
 #endif
 
 // Motd and Pulse's mouse variables
-BOOL gMouseLeftClickInProgress = FALSE;
-BOOL gMouseRightClickInProgress = FALSE;
+BOOL gMouseClickInProgress[8] = {FALSE};
 // End of mouse variables
 
 // Arrays  (Note:  See also EQLib_Utilities.cpp)
@@ -362,15 +389,15 @@ PCHAR szSpawnType[] = {
     "NPC",
     "corpse",
     "any",
-	"pet",
+    "pet",
     NULL // SuperWhoTarget
 };
 
 PCHAR szGuildStatus[] = {
-	"Member",
-	"Officer",
-	"Leader",
-	NULL
+    "Member",
+    "Officer",
+    "Leader",
+    NULL
 };
 
 PCHAR szGender[] = {
@@ -427,21 +454,21 @@ PCHAR szSkills[] = {
 };
 
 PCHAR szInnates[] = {
-	"Awareness",//c4c
-	"Bash Door",//c50
-	"Breathe Fire",//c54
-	"Harmony",//c58
-	"Harm Touch",//c5c
-	"Infravision",//c60
-	"Lay Hands",//c64
-	"Lore",//c68
-	"No Bash",//c6c
-	"Regeneration",//c70
-	"Slam",//c74
-	"Surprise",//c78
-	"Ultravision",//c7c
-	"Inspect",//c80
-	"Open",//c84
+    "Awareness",//c4c
+    "Bash Door",//c50
+    "Breathe Fire",//c54
+    "Harmony",//c58
+    "Harm Touch",//c5c
+    "Infravision",//c60
+    "Lay Hands",//c64
+    "Lore",//c68
+    "No Bash",//c6c
+    "Regeneration",//c70
+    "Slam",//c74
+    "Surprise",//c78
+    "Ultravision",//c7c
+    "Inspect",//c80
+    "Open",//c84
     NULL
 };
 
@@ -463,8 +490,8 @@ PCHAR szZoneExpansionName[] = {
     "Planes of Power",          //4
     "Legacy of Ykesha",         //5
     "Lost Dungeons of Norrath", //6
-	"Gates of Discord",         //7
-	"Omens of War",				//8
+    "Gates of Discord",         //7
+    "Omens of War",             //8
 }; 
 
 #include "grounds.h"
@@ -483,12 +510,12 @@ PCHAR szDmgBonusType[] = {
 }; 
 
 PCHAR szBodyType[] = { 
-   "Player",//0
+   "Object",//0       (catapults, tents, practice dummies, etc)
    "Humanoid", //1
    "Lycanthrope", //2
    "Undead", //3
    "Giant", //4
-   "Construct", //5   (includes confused mutations in ldon)
+   "Construct", //5   (includes confused mutations in ldon, chests as of 9-19-2006)
    "Extraplanar", //6
    "Magical", //7
    "Undead Pet", //8
@@ -515,63 +542,95 @@ PCHAR szBodyType[] = {
    "Dragon",//29
    "Bane Dragon",//30
    "Familiar",//31
-	"Proc Pet",//32
-	"Chest",//33
-	"Muramite",//34
-	"*UNKNOWN BODYTYPE 35",
-	"*UNKNOWN BODYTYPE 36",
-	"*UNKNOWN BODYTYPE 37",
-	"*UNKNOWN BODYTYPE 38",
-	"*UNKNOWN BODYTYPE 39",
-	"*UNKNOWN BODYTYPE 40",
-	"*UNKNOWN BODYTYPE 41",
-	"*UNKNOWN BODYTYPE 42",
-	"*UNKNOWN BODYTYPE 43",
-	"*UNKNOWN BODYTYPE 44",
-	"*UNKNOWN BODYTYPE 45",
-	"*UNKNOWN BODYTYPE 46",
-	"*UNKNOWN BODYTYPE 47",
-	"*UNKNOWN BODYTYPE 48",
-	"*UNKNOWN BODYTYPE 49",
-	"*UNKNOWN BODYTYPE 50",
-	"*UNKNOWN BODYTYPE 51",
-	"*UNKNOWN BODYTYPE 52",
-	"*UNKNOWN BODYTYPE 53",
-	"*UNKNOWN BODYTYPE 54",
-	"*UNKNOWN BODYTYPE 55",
-	"*UNKNOWN BODYTYPE 56",
-	"*UNKNOWN BODYTYPE 57",
-	"*UNKNOWN BODYTYPE 58",
-	"*UNKNOWN BODYTYPE 59",
-	"*UNKNOWN BODYTYPE 60",
-	"*UNKNOWN BODYTYPE 61",
-	"*UNKNOWN BODYTYPE 62",
-	"*UNKNOWN BODYTYPE 63",
-	"*UNKNOWN BODYTYPE 64",
-	"Trap",
-	"Timer",
-	"Trigger",
-	"*UNKNOWN BODYTYPE 68",
-	"*UNKNOWN BODYTYPE 69",
-	"*UNKNOWN BODYTYPE 70",
-}; 
-/**/
+    "Proc Pet",//32
+    "Chest",//33  (5 as of 9-19-2006)
+    "Muramite",//34
+    "*UNKNOWN BODYTYPE 35",
+    "*UNKNOWN BODYTYPE 36",
+    "*UNKNOWN BODYTYPE 37",
+    "*UNKNOWN BODYTYPE 38",
+    "*UNKNOWN BODYTYPE 39",
+    "*UNKNOWN BODYTYPE 40",
+    "*UNKNOWN BODYTYPE 41",
+    "*UNKNOWN BODYTYPE 42",
+    "*UNKNOWN BODYTYPE 43",
+    "*UNKNOWN BODYTYPE 44",
+    "*UNKNOWN BODYTYPE 45",
+    "*UNKNOWN BODYTYPE 46",
+    "*UNKNOWN BODYTYPE 47",
+    "*UNKNOWN BODYTYPE 48",
+    "*UNKNOWN BODYTYPE 49",
+    "*UNKNOWN BODYTYPE 50",
+    "*UNKNOWN BODYTYPE 51",
+    "*UNKNOWN BODYTYPE 52",
+    "*UNKNOWN BODYTYPE 53",
+    "*UNKNOWN BODYTYPE 54",
+    "*UNKNOWN BODYTYPE 55",
+    "*UNKNOWN BODYTYPE 56",
+    "*UNKNOWN BODYTYPE 57",
+    "*UNKNOWN BODYTYPE 58",
+    "*UNKNOWN BODYTYPE 59",
+    "*UNKNOWN BODYTYPE 60",
+    "*UNKNOWN BODYTYPE 61",
+    "*UNKNOWN BODYTYPE 62",
+    "*UNKNOWN BODYTYPE 63",
+    "*UNKNOWN BODYTYPE 64",
+    "Trap",
+    "Timer",
+    "Trigger",
+    "*UNKNOWN BODYTYPE 68",
+    "*UNKNOWN BODYTYPE 69",
+    "*UNKNOWN BODYTYPE 70",
+    "*UNKNOWN BODYTYPE 71",
+    "*UNKNOWN BODYTYPE 72",
+    "*UNKNOWN BODYTYPE 73",
+    "*UNKNOWN BODYTYPE 74",
+    "*UNKNOWN BODYTYPE 75",
+    "*UNKNOWN BODYTYPE 76",
+    "*UNKNOWN BODYTYPE 77",
+    "*UNKNOWN BODYTYPE 78",
+    "*UNKNOWN BODYTYPE 79",
+    "*UNKNOWN BODYTYPE 80",
+    "*UNKNOWN BODYTYPE 81",
+    "*UNKNOWN BODYTYPE 82",
+    "*UNKNOWN BODYTYPE 83",
+    "*UNKNOWN BODYTYPE 84",
+    "*UNKNOWN BODYTYPE 85",
+    "*UNKNOWN BODYTYPE 86",
+    "*UNKNOWN BODYTYPE 87",
+    "*UNKNOWN BODYTYPE 88",
+    "*UNKNOWN BODYTYPE 89",
+    "*UNKNOWN BODYTYPE 90",
+    "*UNKNOWN BODYTYPE 91",
+    "*UNKNOWN BODYTYPE 92",
+    "*UNKNOWN BODYTYPE 93",
+    "*UNKNOWN BODYTYPE 94",
+    "*UNKNOWN BODYTYPE 95",
+    "*UNKNOWN BODYTYPE 96",
+    "*UNKNOWN BODYTYPE 97",
+    "*UNKNOWN BODYTYPE 98",
+    "*UNKNOWN BODYTYPE 99",
+    "Untargetable",
+    "Trap",
+    "Timer",
+    "Trigger",
+};
 
 PCHAR szAugRestrictions[] = { 
-	"None",
-	"Armor Only",
-	"Weapons Only",
-	"1H Weapons Only",
-	"2H Weapons Only",
-	"1H Slash Only",
-	"1H Blunt Only",
-	"Piercing Only",
-	"Hand to Hand Only",
-	"2H Slash Only",
-	"2H Blunt Only",
-	"2H Pierce Only",
-	"Bows Only",
-	"Shields Only"
+    "None",
+    "Armor Only",
+    "Weapons Only",
+    "1H Weapons Only",
+    "2H Weapons Only",
+    "1H Slash Only",
+    "1H Blunt Only",
+    "Piercing Only",
+    "Hand to Hand Only",
+    "2H Slash Only",
+    "2H Blunt Only",
+    "2H Pierce Only",
+    "Bows Only",
+    "Shields Only"
 }; 
 PCHAR szItemSlot[] = {
     "charm",        // 0
@@ -595,16 +654,17 @@ PCHAR szItemSlot[] = {
     "legs",
     "feet",
     "waist",        // 20
+    "powersource",
     "ammo",
-	"pack1",
-	"pack2",
-	"pack3",
-	"pack4",
-	"pack5",
-	"pack6",
-	"pack7",
-	"pack8",        // 29
-    NULL            // 30
+    "pack1",
+    "pack2",
+    "pack3",
+    "pack4",
+    "pack5",
+    "pack6",
+    "pack7",
+    "pack8",        // 30
+    NULL            // 31
 };
 
 BOOL bAllErrorsFatal=FALSE;
@@ -614,8 +674,11 @@ BOOL bLaxColor=TRUE;
 #else
 BOOL bLaxColor=FALSE;
 #endif
+BOOL bAllErrorsLog=FALSE;
 BOOL gbHUDUnderUI=1;
 BOOL gbAlwaysDrawMQHUD=0;
+BOOL gbMQ2LoadingMsg=TRUE;
+BOOL gbExactSearchCleanNames=FALSE;
 
 DWORD nColorAdjective=0;
 DWORD nColorAdjectiveYou=0;
@@ -627,87 +690,90 @@ DWORD nColorFatalError=0;
 
 PCHAR szColorAdjective[]=
 {
-	"",
-	"GOD DAMN ",
-	"FUCKING ",
-	"MOTHER FUCKING ",
-	NULL
+    "",
+    "GOD DAMN ",
+    "FUCKING ",
+    "MOTHER FUCKING ",
+    NULL
 };
 
 PCHAR szColorAdjectiveYou[]=
 {
-	"",
-	" FUCKER",
-	" MOTHER FUCKER",
-	" ASSHOLE",
-	" FUCKTARD",
-	" FUCKING RETARDED MONKEY",
-	" GOD DAMN SHORT BUS PASSENGER",
-	" ASSMONKEY",
-	" PIGFUCKER",
-	" PEEN",
-	" FUCKING IDIOT",
-	" STUPID FUCKER",
-	" DUMBASS",
-	" FUCKING DUMBASS",
-	" STUPID FUCK",
-	NULL
+    "",
+    " FUCKER",
+    " MOTHER FUCKER",
+    " ASSHOLE",
+    " FUCKTARD",
+    " FUCKING RETARDED MONKEY",
+    " GOD DAMN SHORT BUS PASSENGER",
+    " ASSMONKEY",
+    " PIGFUCKER",
+    " PEEN",
+    " FUCKING IDIOT",
+    " STUPID FUCKER",
+    " DUMBASS",
+    " FUCKING DUMBASS",
+    " STUPID FUCK",
+    NULL
 };
 
 PCHAR szColorExpletive[]=
 {
-	"",
-	"CHRIST ",
-	"JESUS FUCK ",
-	"GOD ",
-	"JESUS FUCKING CHRIST ",
-	"FUCKING CHRIST ",
-	"GKFJDGJKFDGJKDF ",
-	NULL
+    "",
+    "CHRIST ",
+    "JESUS FUCK ",
+    "GOD ",
+    "JESUS FUCKING CHRIST ",
+    "FUCKING CHRIST ",
+    "GKFJDGJKFDGJKDF ",
+    NULL
 };
 
 PCHAR szColorSyntaxError[]=
 {
-	"",
-	"%edont you know how to use a simple %acommand%y",
-	NULL
+    "",
+    "%edont you know how to use a simple %acommand%y",
+    NULL
 };
 
 PCHAR szColorMacroError[]=
 {
-	"",
-	"%ei'm pretty sure you're on %acrack%y"
-	"%egood job%y, cant you do anything %aright%y",
-	"%ewhatever you're %asmoking, pass it %aalong%y",
-	"%e%aRTFM%y",
-	"%e%aRTFM%y, until then fuck off%y",
-	"%eget a %abrain%y",
-	NULL
+    "",
+    "%ei'm pretty sure you're on %acrack%y"
+    "%egood job%y, cant you do anything %aright%y",
+    "%ewhatever you're %asmoking, pass it %aalong%y",
+    "%e%aRTFM%y",
+    "%e%aRTFM%y, until then fuck off%y",
+    "%eget a %abrain%y",
+    NULL
 };
 
 PCHAR szColorFatalError[]=
 {
-	"",
-	"%eyou fucking broke it%y",
-	"%egood job%y. what's next? your head on a %astick thats %awhat%y",
-	NULL
+    "",
+    "%eyou fucking broke it%y",
+    "%egood job%y. what's next? your head on a %astick thats %awhat%y",
+    NULL
 };
 
 PCHAR szColorMQ2DataError[]=
 {
-	"",
-	"%ewhy dont you %aread the %areference%y",
-	"%eget a %aclue%y",
-	"%ewhatever you're %asmoking, pass it %aalong%y",
-	"%e%aread the %areference%y",
-	"%e%aread the %areference%y, until then fuck off%y",
-	NULL
+    "",
+    "%ewhy dont you %aread the %areference%y",
+    "%eget a %aclue%y",
+    "%ewhatever you're %asmoking, pass it %aalong%y",
+    "%e%aread the %areference%y",
+    "%e%aread the %areference%y, until then fuck off%y",
+    NULL
 };
 
 StringTable **ppStringTable=(StringTable**)pinstStringTable;
 CDBStr **ppCDBStr = (CDBStr**)pinstCDBStr;
+EQMisc *pEQMisc=(EQMisc*)instEQMisc;
+CSkillMgr **ppCSkillMgr=(CSkillMgr**)pinstSkillMgr;
+CGuild *pGuild=(CGuild*)__Guilds;
 
-EQPlayer **ppEQP_IDArray=(EQPlayer**)__EQP_IDArray;
+//EQPlayer **ppEQP_IDArray=(EQPlayer**)__EQP_IDArray;
 
 CEverQuest **ppEverQuest=(CEverQuest**)pinstCEverQuest;
 CDisplay **ppDisplay=(CDisplay**)pinstCDisplay;
@@ -715,19 +781,20 @@ EQ_PC **ppPCData=(EQ_PC**)pinstPCData;
 EQ_Character **ppCharData=(EQ_Character**)pinstCharData;
 EQPlayer **ppCharSpawn=(EQPlayer**)pinstCharSpawn;
 EQPlayer **ppActiveMerchant=(EQPlayer**)pinstActiveMerchant;
-EQPlayer **ppSpawnList=(EQPlayer**)pinstSpawnList;
+EQPlayerManager **ppSpawnManager=(EQPlayerManager**)pinstSpawnManager;
 EQPlayer **ppLocalPlayer=(EQPlayer**)pinstLocalPlayer;
 EQPlayer **ppControlledPlayer=(EQPlayer**)pinstControlledPlayer;
 EQWorldData **ppWorldData=(EQWorldData**)pinstWorldData;
 SpellManager **ppSpellMgr=(SpellManager**)pinstSpellManager;
-CInvSlot **ppSelectedItem=(CInvSlot **)pinstSelectedItem;
-EQGROUP *pGroup=(EQGROUP*)instGroup;
 EQPlayer **ppTarget=(EQPlayer**)pinstTarget;
 EqSwitchManager **ppSwitchMgr=(EqSwitchManager**)pinstSwitchManager;
 EQItemList **ppItemList=(EQItemList**)pinstEQItemList;
 SPELLFAVORITE *pSpellSets=(SPELLFAVORITE *)pinstSpellSets;
 EQZoneInfo *pZoneInfo=(EQZoneInfo*)instEQZoneInfo;
 AltAdvManager** ppAltAdvManager=(AltAdvManager**)pinstAltAdvManager;
+CONNECTION_T **ppConnection=(PCONNECTION_T*)__gWorld;
+AURAMGR **ppAuraMgr=(AURAMGR**)pinstAuraMgr;
+EQCHATMGR **ppEQChatMgr=(EQCHATMGR**)pinstCChatManager;
 
 EQPlayer **ppTradeTarget=(EQPlayer **)pinstTradeTarget;
 EQPlayer **ppActiveBanker=(EQPlayer **)pinstActiveBanker;
@@ -786,7 +853,7 @@ CTextEntryWnd **ppTextEntryWnd=(CTextEntryWnd**)pinstCTextEntryWnd;
 CFileSelectionWnd **ppFileSelectionWnd=(CFileSelectionWnd**)pinstCFileSelectionWnd;
 CLootWnd **ppLootWnd=(CLootWnd**)pinstCLootWnd;
 CActionsWnd **ppActionsWnd=(CActionsWnd**)pinstCActionsWnd;
-//CCombatAbilityWnd **ppCombatAbilityWnd=(CCombatAbilityWnd**)pinstCCombatAbilityWnd;
+CCombatAbilityWnd **ppCombatAbilityWnd=(CCombatAbilityWnd**)pinstCCombatAbilityWnd;
 CMerchantWnd **ppMerchantWnd=(CMerchantWnd**)pinstCMerchantWnd;
 CTradeWnd **ppTradeWnd=(CTradeWnd**)pinstCTradeWnd;
 CBazaarWnd **ppBazaarWnd=(CBazaarWnd**)pinstCBazaarWnd;
@@ -817,13 +884,18 @@ CJournalCatWnd **ppJournalCatWnd=(CJournalCatWnd**)pinstCJournalCatWnd;
 CPetitionQWnd **ppPetitionQWnd=(CPetitionQWnd**)pinstCPetitionQWnd;
 CSoulmarkWnd **ppSoulmarkWnd=(CSoulmarkWnd**)pinstCSoulmarkWnd;
 CTimeLeftWnd **ppTimeLeftWnd=(CTimeLeftWnd**)pinstCTimeLeftWnd;
-
 CTextOverlay **ppTextOverlay=(CTextOverlay**)pinstCTextOverlay;
+CPotionBeltWnd **ppPotionBeltWnd=(CPotionBeltWnd**)pinstCPotionBeltWnd;
 
 CSidlManager **ppSidlMgr=(CSidlManager **)pinstCSidlManager;
 CXWndManager **ppWndMgr=(CXWndManager**)pinstCXWndManager;
 KeypressHandler **ppKeypressHandler=(KeypressHandler**)instKeypressHandler;
 PEQRAID pRaid=(PEQRAID)instCRaid;
+DZMEMBER **ppDZMember=(DZMEMBER**)pinstDZMember;
+DZTIMERINFO **ppDZTimerInfo=(DZTIMERINFO**)pinstDZTimerInfo;
+TASKMEMBER **ppTaskMember=(TASKMEMBER**)pinstTaskMember; 
+DYNAMICZONE *pDynamicZone=(DYNAMICZONE*)instDynamicZone;
+MERCENARYINFO **ppMercInfo=(MERCENARYINFO**)pinstMercenaryData;
 
 PMQPLUGIN pPlugins=0;
 PMQXMLFILE pXMLFiles=0;

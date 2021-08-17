@@ -1,6 +1,6 @@
 /***************************************************************************** 
 MQ2Main.dll: MacroQuest2's extension DLL for EverQuest 
-    Copyright (C) 2002-2003 Plazmic, 2003-2005 Lax
+Copyright (C) 2002-2003 Plazmic, 2003-2005 Lax
 
 This program is free software; you can redistribute it and/or modify 
 it under the terms of the GNU General Public License, version 2, as published by 
@@ -18,7 +18,7 @@ GNU General Public License for more details.
 
 #define DBG_SPEW 
 
- 
+
 #include "MQ2Main.h" 
 
 
@@ -38,85 +38,120 @@ GNU General Public License for more details.
 // if unsuccessful, return FALSE
 BOOL ExtractValue(PCHAR szFile, PCHAR szStart, PCHAR szEnd, PCHAR szValue)
 {
-	// verify we have legal pointers passed to us
-	if (!szValue)
-		return FALSE;
+    // verify we have legal pointers passed to us
+    if (!szValue)
+        return FALSE;
 
-	if (!szFile || !szStart || !szEnd)
-	{
-		szValue[0] = 0;
-		return FALSE;
-	}
+    if (!szFile || !szStart || !szEnd)
+    {
+        szValue[0] = 0;
+        return FALSE;
+    }
 
-	PCHAR sub,sub2,fence;
-	DWORD lenStart = strlen(szStart);
+    PCHAR sub,sub2,fence;
+    DWORD lenStart = strlen(szStart);
 
-	fence = strstr(szFile,"ScreenID"); // needed to make sure we don't start into another element
+    fence = strstr(szFile,"ScreenID"); // needed to make sure we don't start into another element
 
-	sub = strstr(szFile, szStart); 
-	sub2 = strstr(szFile, szEnd); 
-	if (!sub || !sub2 || (fence && (sub > fence))) {
-		szValue[0] = 0;
-		return FALSE;
-	}
+    sub = strstr(szFile, szStart); 
+    sub2 = strstr(szFile, szEnd); 
+    if (!sub || !sub2 || (fence && (sub > fence))) {
+        szValue[0] = 0;
+        return FALSE;
+    }
 
-	memcpy(szValue,sub + lenStart, (sub2-sub) - lenStart);
-	szValue[(sub2-sub) - lenStart] = 0;
-	DebugSpew("Value extracted for %s was %s",szStart,szValue);
-	return TRUE;
+    memcpy(szValue,sub + lenStart, (sub2-sub) - lenStart);
+    szValue[(sub2-sub) - lenStart] = 0;
+    DebugSpew("Value extracted for %s was %s",szStart,szValue);
+    return TRUE;
 }
-
-BOOL MoveMouse(DWORD x, DWORD y) 
-{ 
-	if (EQADDR_MOUSE) {
-		EQADDR_MOUSE->X = x; 
-		EQADDR_MOUSE->Y = y; 
-		DebugSpew("Moved mouse to: %d,%d", x, y); 
-		return TRUE;
-	}
-	return FALSE;
-} 
 
 #ifndef ISXEQ
 
-BOOL ParseMouseLoc(PCHARINFO pCharInfo, PCHAR szMouseLoc) 
+// TODO: Expand this to support mouse buttons 3->8
+VOID ClickMouse(DWORD button)
 {
-	CHAR szArg1[MAX_STRING] = {0};
-	CHAR szArg2[MAX_STRING] = {0};
-	int ClickX; //actual location to click, calculated from ButtonX 
-	int ClickY; //actual location to click, calculated from ButtonY 
+   if (button > 1)
+      return;
+   DWORD mdType = (DWORD)MD_Button0 + button;
 
-	// determine mouse location - x and y given
-	if ((szMouseLoc[0]=='+') || (szMouseLoc[0]=='-') || ((szMouseLoc[0]>='0') && (szMouseLoc[0]<='9')))
-	{ // x and y were given so lets convert them and move mouse
-		GetArg(szArg1,szMouseLoc,1);
-		GetArg(szArg2,szMouseLoc,2);
-		ClickX = atoi(szArg1);
-		ClickY = atoi(szArg2);
-		if ((szArg1[0]=='+') || (szArg1[0]=='-') || (szArg2[0]=='+') || (szArg2[0]=='-'))
-		{ // relative location was passed so offset from current
-			ClickX += EQADDR_MOUSE->X;
-			ClickY += EQADDR_MOUSE->Y;
-			DebugSpew("Moving mouse by relative offset");
-		} else {
-			DebugSpew("Moving mouse to absolute position");
-		}
-		return MoveMouse(ClickX,ClickY);
-		
-	}
-	MacroError("'%s' mouse click is either invalid or should be done using /notify",szMouseLoc);
-	return FALSE;
+   if (!((EQADDR_MOUSECLICK->Click[button] == 0x80) && (!EQADDR_MOUSECLICK->Confirm[button])))
+      EQADDR_MOUSECLICK->Click[button] = 0x80;
+
+   gMouseClickInProgress[button] = TRUE;
+
+   gMouseEventTime = GetFastTime();
+   PMOUSESPOOF pData = (PMOUSESPOOF)malloc(sizeof(MOUSESPOOF));
+   pData->mdType = (MOUSE_DATA_TYPES)mdType;
+   pData->dwData = 0x00;
+   pData->pNext = NULL;
+   if (!gMouseData) {
+      gMouseData = pData;
+   } else {
+      PMOUSESPOOF pTemp = gMouseData;
+      while (pTemp->pNext) {
+         pTemp = pTemp->pNext;
+      }
+      pTemp->pNext = pData;
+   }
+}
+
+VOID MouseButtonUp(DWORD x, DWORD y, PCHAR szButton)
+{
+    char c[MAX_STRING]={0};
+    gLClickedObject=false;
+    if(((CDisplay*)pDisplay)->GetClickedActor(x,y,0,&c,&c))
+    {
+        if(!strnicmp(szButton,"left",4))
+        {
+            // click will fail if this isn't set to a time less than TimeStamp minus 750ms
+            *((DWORD*)__LMouseHeldTime)=((PCDISPLAY)pDisplay)->TimeStamp-0x45;
+            pEverQuest->LMouseUp(x,y);
+            gLClickedObject=true;
+            EnviroTarget.Name[0]=0;
+        }
+        /* i don't think there's any use for this currently - ieatacid
+        else if(!strnicmp(szButton,"right",5))
+        {
+        // click will fail if this isn't set to a time less than TimeStamp minus 500ms
+        *((DWORD*)__RMouseHeldTime)=((PCDISPLAY)pDisplay)->TimeStamp-0x45;
+        pEverQuest->RMouseUp(x,y);
+        }*/
+    }
+}
+
+VOID ClickMouseLoc(PCHAR szMouseLoc, PCHAR szButton) 
+{
+    CHAR szArg1[MAX_STRING] = {0};
+    CHAR szArg2[MAX_STRING] = {0};
+    int ClickX; //actual location to click, calculated from ButtonX 
+    int ClickY; //actual location to click, calculated from ButtonY 
+
+    // determine mouse location - x and y given
+    if ((szMouseLoc[0]=='+') || (szMouseLoc[0]=='-') || ((szMouseLoc[0]>='0') && (szMouseLoc[0]<='9')))
+    { // x and y were given so lets convert them and move mouse
+        GetArg(szArg1,szMouseLoc,1);
+        GetArg(szArg2,szMouseLoc,2);
+        ClickX = atoi(szArg1);
+        ClickY = atoi(szArg2);
+        if ((szArg1[0]=='+') || (szArg1[0]=='-') || (szArg2[0]=='+') || (szArg2[0]=='-'))
+        { // relative location was passed so offset from current
+            ClickX += EQADDR_MOUSE->X;
+            ClickY += EQADDR_MOUSE->Y;
+            DebugSpew("Clicking mouse by relative offset");
+        } else {
+            DebugSpew("Clicking mouse at absolute position");
+        }
+        MouseButtonUp(ClickX,ClickY,szButton);
+    }
+    else
+    {
+        MacroError("'%s' mouse click is either invalid or should be done using /notify",szMouseLoc);
+    }
 }
 #endif
-VOID SendEQMessage(DWORD PacketType, PVOID pData, DWORD Length)
-{
-	if (!send_message || !EQADDR_GWORLD) 
-	{
-		return;
-	}
-	send_message(EQADDR_GWORLD,PacketType,pData,Length,TRUE);
-}
 
+#ifndef ISXEQ_LEGACY
 
 // *************************************************************************** 
 // Function: Click 
@@ -126,119 +161,82 @@ VOID SendEQMessage(DWORD PacketType, PVOID pData, DWORD Length)
 // *************************************************************************** 
 BOOL IsMouseWaitingForButton()
 {
-	return ((EQADDR_MOUSECLICK->RightClick == EQADDR_MOUSECLICK->ConfirmRightClick) 
-		&& (EQADDR_MOUSECLICK->LeftClick == EQADDR_MOUSECLICK->ConfirmLeftClick)) ? FALSE : TRUE;
+    return ((EQADDR_MOUSECLICK->Click[1] == EQADDR_MOUSECLICK->Confirm[1])
+        && (EQADDR_MOUSECLICK->Click[0] == EQADDR_MOUSECLICK->Confirm[0])) ? FALSE : TRUE;
 }
 
 BOOL IsMouseWaiting()
 {
-	BOOL Result = FALSE;
+    BOOL Result = FALSE;
 
-	if (IsMouseWaitingForButton()) Result = TRUE;
-	else {
-		// Here we basically force the MQ script engine to wait for the button up on mouse clicks
+    if (IsMouseWaitingForButton()) Result = TRUE;
+    else {
+        // Here we basically force the MQ script engine to wait for the button up on mouse clicks
 
-		if (gMouseLeftClickInProgress) {
-			//SetMouseButtonUpL();
-			if (!((!EQADDR_MOUSECLICK->LeftClick) && (EQADDR_MOUSECLICK->ConfirmLeftClick == 0x80))) EQADDR_MOUSECLICK->LeftClick = 0x0;
-			gMouseLeftClickInProgress = FALSE;
-			Result = TRUE;
-		}
-		if (gMouseRightClickInProgress) {
-			//SetMouseButtonUpR();
-			if (!((!EQADDR_MOUSECLICK->RightClick) && (EQADDR_MOUSECLICK->ConfirmRightClick == 0x80))) EQADDR_MOUSECLICK->RightClick = 0x0;
-			gMouseRightClickInProgress = FALSE;
-			Result = TRUE;
-		}
-		
-	}
-	return Result;
+        if (gMouseClickInProgress[0]) {
+            //SetMouseButtonUpL();
+            if (!((!EQADDR_MOUSECLICK->Click[0]) && (EQADDR_MOUSECLICK->Confirm[0] == 0x80))) EQADDR_MOUSECLICK->Click[0] = 0x0;
+            gMouseClickInProgress[0] = FALSE;
+            Result = TRUE;
+        }
+        if (gMouseClickInProgress[1]) {
+            //SetMouseButtonUpR();
+            if (!((!EQADDR_MOUSECLICK->Click[1]) && (EQADDR_MOUSECLICK->Confirm[1] == 0x80))) EQADDR_MOUSECLICK->Click[1] = 0x0;
+            gMouseClickInProgress[1] = FALSE;
+            Result = TRUE;
+        }
+    }
+    return Result;
 }
+#endif
+
 #ifndef ISXEQ
 
-VOID Click(PSPAWNINFO pChar, PCHAR szLine) { 
-   CHAR szArg1[MAX_STRING] = {0}; 
-   PCHAR szMouseLoc; 
-   MOUSE_DATA_TYPES mdType = MD_Unknown; 
-   DWORD RightOrLeft = 0; 
+VOID Click(PSPAWNINFO pChar, PCHAR szLine) 
+{ 
+    CHAR szArg1[MAX_STRING] = {0}; 
+    PCHAR szMouseLoc; 
+    MOUSE_DATA_TYPES mdType = MD_Unknown; 
+    DWORD RightOrLeft = 0; 
 
-   GetArg(szArg1, szLine, 1); //left or right 
-   szMouseLoc = GetNextArg(szLine, 1); //location to click 
-    
-   //parse location for click location (szMouseLoc) here 
-   if (szMouseLoc && szMouseLoc[0]!=0) { 
-      if (!strnicmp(szMouseLoc, "target", 6)) {      
-      if (!pTarget) { 
-        WriteChatColor("You must have a target selected for /click x target.",CONCOLOR_RED); 
-        return; 
-      } 
-         if (!strnicmp(szArg1, "left", 4)) { 
-             pEverQuest->LeftClickedOnPlayer(pTarget); 
-         } else if (!strnicmp(szArg1, "right", 5)) { 
-          pEverQuest->RightClickedOnPlayer(pTarget); 
-         } 
-         return; 
-	  } else if (!strnicmp(szMouseLoc, "item", 4)) {
-			// a right clicked ground spawn does nothing
-			if (!strnicmp(szArg1, "left", 4) && EnviroTarget.Name[0]!=0 && DistanceToSpawn(pChar,&EnviroTarget)<20.0f) {
-				INTERACTGROUNDITEM Data;
-				Data.SpawnID = GetCharInfo()->pSpawn->SpawnID;
-				Data.DropID = EnviroTarget.Race;
-				SendEQMessage(EQ_INTERACTGROUNDITEM,&Data,sizeof(INTERACTGROUNDITEM));
-				EnviroTarget.Name[0]=0;
-				if (pTarget==(EQPlayer*)&EnviroTarget) pTarget=NULL;
-				return;
-			}
-      } else if (!ParseMouseLoc(GetCharInfo(), szMouseLoc)) { 
-         DebugSpew("Invalid mouse loc to click, aborting: %s",szMouseLoc); 
-         return; 
-      } 
-   } 
-    
-   if (szArg1[0]!=0) { 
-      if (!strnicmp(szArg1, "left", 4)) { 
-         mdType = MD_Button0; 
-		 if (!((EQADDR_MOUSECLICK->LeftClick == 0x80) && (!EQADDR_MOUSECLICK->ConfirmLeftClick))) EQADDR_MOUSECLICK->LeftClick = 0x80;
-         gMouseLeftClickInProgress = TRUE; 
-      } else if (!strnicmp(szArg1, "right", 5)) { 
-         mdType = MD_Button1;
-		 if (!((EQADDR_MOUSECLICK->RightClick == 0x80) && (!EQADDR_MOUSECLICK->ConfirmRightClick))) EQADDR_MOUSECLICK->RightClick = 0x80;
-         gMouseRightClickInProgress = TRUE;
+    GetArg(szArg1, szLine, 1); //left or right 
+    szMouseLoc = GetNextArg(szLine, 1); //location to click 
+
+    //parse location for click location (szMouseLoc) here 
+    if (szMouseLoc && szMouseLoc[0]!=0) { 
+        if (!strnicmp(szMouseLoc, "target", 6)) {
+            if (!pTarget) { 
+                WriteChatColor("You must have a target selected for /click x target.",CONCOLOR_RED); 
+                return; 
+            } 
+            if (!strnicmp(szArg1, "left", 4)) { 
+                pEverQuest->LeftClickedOnPlayer(pTarget); 
+                gMouseEventTime = GetFastTime();
+            } else if (!strnicmp(szArg1, "right", 5)) { 
+                pEverQuest->RightClickedOnPlayer(pTarget); 
+                gMouseEventTime = GetFastTime();
+            } 
+            return;
+        }
+        else if(!strnicmp(szMouseLoc,"center",6))
+        {
+            sprintf(szMouseLoc,"%d %d",ScreenXMax/2,ScreenYMax/2);
+        }
+        ClickMouseLoc(szMouseLoc, szArg1);
+        return;
+    }
+
+    if (szArg1[0]!=0) { 
+        if (!strnicmp(szArg1, "left", 4)) { 
+            ClickMouse(0);
+        } else if (!strnicmp(szArg1, "right", 5)) { 
+            ClickMouse(1);
         } else { 
-           WriteChatColor("Usage: /click <left|right>",USERCOLOR_DEFAULT); 
-           DebugSpew("Bad command: %s",szLine); 
-           return; 
-        } 
-        PMOUSESPOOF pData = (PMOUSESPOOF)malloc(sizeof(MOUSESPOOF)); 
-        pData->mdType = mdType; 
-        pData->dwData = 0x00; 
-        pData->pNext = NULL; 
-        if (!gMouseData) { 
-           gMouseData = pData; 
-        } else { 
-           PMOUSESPOOF pTemp = gMouseData; 
-           while (pTemp->pNext) { 
-              pTemp = pTemp->pNext; 
-           } 
-           pTemp->pNext = pData; 
+            WriteChatColor("Usage: /click <left|right>",USERCOLOR_DEFAULT); 
+            DebugSpew("Bad command: %s",szLine); 
+            return; 
         } 
     } 
 }
 
-
-// *************************************************************************** 
-// Function: MouseTo 
-// Description: Our '/mouseto' command 
-// Moves the mouse 
-// Usage: /mouseto <mouseloc>
-// *************************************************************************** 
-VOID MouseTo(PSPAWNINFO pChar, PCHAR szLine) 
-{
-	if (szLine && szLine[0])
-		if (ParseMouseLoc(GetCharInfo(), szLine))
-			return;
-
-	WriteChatColor("Usage: /mouseto <mouseloc>",USERCOLOR_DEFAULT); 
-	DebugSpew("Help invoked or Bad MouseTo command: %s",szLine); 
-}
 #endif

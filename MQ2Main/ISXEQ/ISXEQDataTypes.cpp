@@ -138,7 +138,7 @@ bool MQ2BuffType::GETMETHOD()
 		{
 			unsigned long slot;
 			char Temp[16];
-			if (GetBuffID(pPtr,slot))
+			if (GetBuffID(pPtr,(DWORD&)slot))
 			{
 				sprintf(Temp,"Buff%d",slot-1); 
 				DWORD KeyboardFlags;
@@ -148,7 +148,7 @@ bool MQ2BuffType::GETMETHOD()
 				*(DWORD*)&((PCXWNDMGR)pWndMgr)->KeyboardFlags=KeyboardFlags; 		
 				return true;
 			}
-			if (GetShortBuffID(pPtr,slot))
+			if (GetShortBuffID(pPtr,(DWORD&)slot))
 			{
 				sprintf(Temp,"Buff%d",slot-1); 
 				DWORD KeyboardFlags;
@@ -178,10 +178,24 @@ bool MQ2CharacterType::GETMETHOD()
 		Temp.Ptr=pPtr->pSpawn;
 		return pSpawnType->GetMethod(Temp,Method,argc,argv);
 	}
-	// TODO
-//	switch((CharacterMethods)pMethod->ID)
-//	{
-//	}
+   switch((CharacterMethods)pMethod->ID)
+   {
+      case Stand:
+      {
+         EzCommand("/stand");
+         return true;
+      }
+      case Sit:
+      {
+         EzCommand("/sit");
+         return true;
+      }
+      case Dismount:
+      {
+         EzCommand("/dismount");
+         return true;
+      }
+   } 
 	return false;
 #undef pPtr
 }
@@ -299,10 +313,6 @@ bool MQ2SwitchType::GETMETHOD()
 	{
 		return false;
 	}
-	// TODO
-//	switch((SwitchMethods)pMethod->ID)
-//	{
-//	}
 	return false;
 #undef pPtr
 }
@@ -318,10 +328,6 @@ bool MQ2GroundType::GETMETHOD()
 	{
 		return false;
 	}
-	// TODO
-//	switch((GroundMethods)pMethod->ID)
-//	{
-//	}
 	return false;
 #undef pPtr
 }
@@ -391,7 +397,7 @@ bool MQ2MerchantType::GETMETHOD()
 		return pSpawnType->GetMethod(Temp,Method,argc,argv);
 	}
 	// TODO
-//	Merchant((MerchantMethods)pMethod->ID)
+//	switch((MerchantMethods)pMethod->ID)
 //	{
 //	}
 	return false;
@@ -408,7 +414,7 @@ bool MQ2InvSlotType::GETMETHOD()
 		return false;
 	}
 	// TODO
-//	InvSlot((InvSlotMethods)pMethod->ID)
+//	switch((InvSlotMethods)pMethod->ID)
 //	{
 //	}
 	return false;
@@ -460,7 +466,7 @@ bool MQ2SkillType::GETMETHOD()
 		return false;
 	}
 	// TODO
-//	Skill((SkillMethods)pMethod->ID)
+//	switch((SkillMethods)pMethod->ID)
 //	{
 //	}
 	return false;
@@ -478,7 +484,7 @@ bool MQ2AltAbilityType::GETMETHOD()
 		return false;
 	}
 	// TODO
-//	AltAbility((AltAbilityMethods)pMethod->ID)
+//	switch((AltAbilityMethods)pMethod->ID)
 //	{
 //	}
 	return false;
@@ -495,7 +501,7 @@ bool MQ2RaidType::GETMETHOD()
 		return false;
 	}
 	// TODO
-//	Raid((RaidMethods)pMethod->ID)
+//	switch((RaidMethods)pMethod->ID)
 //	{
 //	}
 	return false;
@@ -518,8 +524,48 @@ bool MQ2RaidMemberType::GETMETHOD()
 		return pSpawnType->GetMethod(Temp,Method,argc,argv);
 	}
 	// TODO
-//	RaidMember((RaidMemberMethods)pMethod->ID)
+//	switch((RaidMemberMethods)pMethod->ID)
 //	{
 //	}
 	return false;
+}
+
+bool MQ2FriendsType::GETMETHOD()
+{
+	PMQ2TYPEMETHOD pMethod=MQ2FriendsType::FindMethod(Method);
+	if (!pMethod)
+	{
+		return false;
+	}
+	// TODO
+//	switch((FriendsMethods)pMethod->ID)
+//	{
+//	}
+	return false;
+}
+
+bool MQ2TargetType::GETMETHOD()
+{
+#define pPtr ((PSPAWNINFO)VarPtr.Ptr)
+   if (!VarPtr.Ptr)
+      return false;
+   PMQ2TYPEMETHOD pMethod=MQ2TargetType::FindMethod(Method);
+   if (!pMethod)
+      return false;
+   else
+      return true;
+#undef pPtr
+}
+
+bool MQ2XTargetType::GETMETHOD()
+{
+#define pPtr ((PSPAWNINFO)VarPtr.Ptr)
+   if (!VarPtr.Ptr)
+      return false;
+   PMQ2TYPEMETHOD pMethod=MQ2XTargetType::FindMethod(Method);
+   if (!pMethod)
+      return false;
+   else
+      return true;
+#undef pPtr
 }

@@ -92,7 +92,7 @@ EQLIB_API VOID PluginsReloadUI()
 	pISInterface->ServiceBroadcast(pExtension,hUIService,UISERVICE_RELOAD,0);
 }
 
-void __cdecl GamestateRequest(ISXInterface *pClient, unsigned long MSG, void *lpData)
+void __cdecl GamestateRequest(ISXInterface *pClient, unsigned int MSG, void *lpData)
 {
 	if (MSG==ISXSERVICE_CLIENTADDED)
 	{
@@ -100,7 +100,7 @@ void __cdecl GamestateRequest(ISXInterface *pClient, unsigned long MSG, void *lp
 		pISInterface->ServiceNotify(pExtension,hGamestateService,(ISXInterface*)lpData,GAMESTATESERVICE_CHANGED,(void*)gGameState);
 	}
 }
-void __cdecl SpawnRequest(ISXInterface *pClient, unsigned long MSG, void *lpData)
+void __cdecl SpawnRequest(ISXInterface *pClient, unsigned int MSG, void *lpData)
 {
 	if (MSG==ISXSERVICE_CLIENTADDED)
 	{
@@ -141,6 +141,7 @@ EQLIB_API VOID PluginsSetGameState(DWORD GameState)
 		{
 			AutoExec=true;
 			pISInterface->RunCommandFile("EQ-AutoExec");
+			pISInterface->RunScript("EQ-AutoExec");
 		}
 		if (CharSelect)
 		{
@@ -149,7 +150,8 @@ EQLIB_API VOID PluginsSetGameState(DWORD GameState)
 			if (PCHARINFO pCharInfo=GetCharInfo())
 			{
 				sprintf(szBuffer,"EQ-%s_%s",EQADDR_SERVERNAME,pCharInfo->Name);
-				pISInterface->RunCommandFile("szBuffer");
+				pISInterface->RunCommandFile(szBuffer);
+				pISInterface->RunScript(szBuffer);
 			}
 		}
 	}
@@ -159,9 +161,11 @@ EQLIB_API VOID PluginsSetGameState(DWORD GameState)
 		{
 			AutoExec=true;
 			pISInterface->RunCommandFile("EQ-AutoExec");
+			pISInterface->RunScript("EQ-AutoExec");
 		}
 		CharSelect=true;
 		pISInterface->RunCommandFile("EQ-CharSelect");
+		pISInterface->RunScript("EQ-CharSelect");
 	}
 
 	DebugSpew("PluginsSetGameState(%d)",GameState);
@@ -171,11 +175,12 @@ EQLIB_API VOID PluginsSetGameState(DWORD GameState)
 // "Spawn" service
 EQLIB_API VOID PluginsAddSpawn(PSPAWNINFO pNewSpawn)
 {
+	DWORD BodyType=GetBodyType(pNewSpawn);
 	PluginDebug("PluginsAddSpawn(%s,%d,%d)",pNewSpawn->Name,pNewSpawn->Race,pNewSpawn->BodyType);
 	SpawnByName[pNewSpawn->Name]=pNewSpawn;
 	if (gGameState>GAMESTATE_CHARSELECT)
 		SetNameSpriteState(pNewSpawn,1);
-	if (GetBodyTypeDesc(pNewSpawn->BodyType)[0]=='*')
+	if (GetBodyTypeDesc(BodyType)[0]=='*') 
 	{
 		WriteChatf("Spawn '%s' has unknown bodytype %d",pNewSpawn->Name,pNewSpawn->BodyType);
 	}
@@ -190,6 +195,8 @@ EQLIB_API VOID PluginsRemoveSpawn(PSPAWNINFO pSpawn)
 	if (pSpawn->GM) 
 		pISInterface->ServiceBroadcast(pExtension,hSpawnService,SPAWNSERVICE_REMOVEGM,pSpawn);
 	pISInterface->ServiceBroadcast(pExtension,hSpawnService,SPAWNSERVICE_REMOVESPAWN,pSpawn);
+
+	pISInterface->InvalidatePersistentObject(PersistentPointerClass,(unsigned int)pSpawn);
 }
 EQLIB_API VOID PluginsAddGroundItem(PGROUNDITEM pNewGroundItem)
 {
@@ -206,10 +213,12 @@ EQLIB_API VOID PluginsRemoveGroundItem(PGROUNDITEM pGroundItem)
 EQLIB_API VOID PluginsBeginZone(VOID)
 {
 	pISInterface->ServiceBroadcast(pExtension,hZoneService,ZONESERVICE_BEGINZONE,0);
+	gbInZone=false;
 }
 EQLIB_API VOID PluginsEndZone(VOID)
 {
 	pISInterface->ServiceBroadcast(pExtension,hZoneService,ZONESERVICE_ENDZONE,0);
+	gbInZone=true;
 }
 EQLIB_API VOID PluginsZoned()
 {

@@ -45,6 +45,9 @@ TOPLEVELOBJECT("Raid",dataRaid);
 TOPLEVELOBJECT("NamingSpawn",dataNamingSpawn);
 TOPLEVELOBJECT("SpawnCount",dataSpawnCount);
 TOPLEVELOBJECT("LineOfSight",dataLineOfSight);
-
+TOPLEVELOBJECT("DoorTarget",dataDoorTarget);
+TOPLEVELOBJECT("ItemTarget",dataItemTarget);
+TOPLEVELOBJECT("NearestDoor",dataNearestDoor); 
+TOPLEVELOBJECT("Friends",dataFriends); 
 
 /**/

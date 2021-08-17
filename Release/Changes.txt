@@ -1,3 +1,1005 @@
+9 June 2010 by ieatacid
+- Updated for today's patch
+
+13 May 2010 by dkaa
+- made the chat window history a constant to promote harmony
+
+13 May 2010 by ieatacid
+- Updated for today's patch
+- Fixed Me.Dar and Me.Buff.Dar
+
+12 May 2010 by ieatacid
+- Updated for today's patch
+
+10 May 2010 by ieatacid
+- Fixed the 'listselect' window notification so you no longer need to 'leftmouse' and 'leftmouseup' after. Macros will need to be adjusted accordingly
+
+14 April 2010 by ieatacid
+- Updated for today's patch
+
+10 March 2010 by ieatacid
+- Updated for today's patch
+
+13 January 2010 by ieatacid
+- Updated for today's patch
+
+7 January 2010 by dkaa
+- Fixed the buff count to 30, song count to 20
+
+24 December 2009 by ieatacid
+- Added Me.XTarget.  See wiki for details: http://www.macroquest2.com/wiki/index.php/DataType:xtarget
+
+18 December 2009 by rswiders
+- Updated for today's patch
+
+15 December 2009 by rswiders
+- Updated for today's patch
+
+14 December 2009 by dkaa
+- Fix for AltAblity and Underfoot
+
+8 December 2009 by ieatacid, rswiders
+- Updated for today's patch
+
+19 November 2009 by ieatacid
+- Updated for today's patch
+
+18 November 2009 by dkaa
+- added npccorpse and pccorpse to the spawn search filters
+
+14 November 2009 by ieatacid
+- Fix for EQMERCHWINDOW struct which will fix various things that reference it
+
+14 November 2009 by dkaa
+- Fix for labels -- added CLABELWND which is not, in fact, a CSIDLWND
+
+13 November 2009 by dkaa
+- Fix for inventory problems (corrected InvSlotWnd)
+
+12 November 2009 by ieatacid, dkaa, rswiders
+- Updated for November 11th patch
+
+21 October 2009 by ieatacid
+- Updated for today's patch
+
+8 October 2009 by ieatacid
+- Updated for today's patch
+
+21 September 2009 by ieatacid
+- FindItemCount TLO now searches for augs on items
+
+15 September 2009 by rswiders
+- Updated for today's patch
+
+6 September 2009 by dkaa
+- added el_nene's FromData changes
+
+6 September 2009 by ieatacid
+- Added spawn.Following which returns the spawn that a player is /following, or your pet's target
+
+31 August 2009 by ieatacid
+- Fixed _SPELL struct that changed in July
+- Changed GAMESTATE_PRECHARSELECT from '6' to '-1'
+
+19 August 2009 by ieatacid
+- Updated offsets for today's patch
+
+17 August 2009 by ieatacid
+- Mouse_Aux3, Mouse_Aux4, Mouse_Aux5 added to dikeys.h
+
+16 August 2009 by ieatacid
+- Added mouse buttons to dikeys.h (Mouse_Mid, Mouse_Aux1, Mouse_Aux2).  This should let you /bind them now and eliminate associated crashes
+
+14 August 2009 by pms
+- fix for shownames
+  http://www.macroquest2.com/phpBB2/viewtopic.php?t=16365
+
+14 August 2009 by brainiac, dkaa
+- Updated for the 08/12 patch
+
+15 July 2009 by rswiders
+- Updated for today's patch
+
+14 July 2009 by rswiders
+- Changed NUM_SPELL_GEMS to reflect the additional 2 added by the devs.
+
+3 July 2009 by ieatacid
+- Fixed /loadspells and other functions that rely on the _SPELLFAVORITE struct
+- Updated MQ2ItemDisplay -- it now shows our extra item info when the modified/unmodified button is pressed (thanks pms for the idea)
+
+29 June 2009 by ieatacid
+- gGameState now gets set correctly when camping to desktop or server-select screen
+
+24 June 2009 by ieatacid
+- Reverted changes to CleanUI detour to fix MQ2ChatWnd crash when reloading the UI
+- Changed tooltip handling in MQItemdisplay to work more efficiently and fix a bug with the left ear slot
+
+24 June 2009 by rswiders
+- Updated for today's patch
+
+21 June 2009 by ieatacid
+- Fixed suffix display bug in captions (the error was in _SPAWNINFO)
+
+20 June 2009 by rswiders
+- Backed out bug fix for MQ captions.
+- Generate correct gGameState when camping (server/desktop).  This should fix random crashes in plugins when they think they are still "INGAME" but are really at server select screen.
+
+18 June 2009 by rswiders, ieatacid
+- Updated for today's patch
+- Added NUM_BUFF_SLOTS to handle the everchanging number of buffs in the target and pet windows.
+
+17 June 2009 by rswiders
+- Added the command history functionality to MQ2ChatWnd (thanks PMS)
+
+15 June 2009 by dkaa
+- Fixed bug NoDrop on items on FV and other special servers
+
+15 June 2009 by rswiders
+- Fixed bug with flashing MQ captions.
+- Fixed bug with tooltips.  If you had a clicky item equipped in the left ear, the target window (and possibly others) would show tooltips baseed on "item name(ready)" instead of "buff name (time remaining)".
+- Added filtering of macro ended messages.
+- Added additional functionality to MQ2ChatWnd (thanks PMS)
+   The window will redraw right away when you reload your UI in game, rather than waiting for the first text output request to recreate itself. 
+   AutoScroll - on by default/normal behavior 
+   NoCharSelect - off by default/normal behavior 
+   SaveByChar - on by default/normal behavior 
+
+12 June 2009 by rswiders
+- Updated for today's patch
+
+11 June 2009 by ieatacid
+- Fixed /unload crash on Windows 7 (and Vista?)
+
+11 June 2009 by rswiders, dkaa
+- Fixed target.buff
+
+10 June 2009 by ieatacid, rswiders
+- Updated for today's patch
+
+21 May 2009 by rswiders
+- Updated for today's patch
+
+15 May 2009 by ieatacid, dkaa
+- Fixed guild struct and related functions
+- Fixed pet window struct
+- Removed MAX_GUILDS as it is no longer used
+
+14 May 2009 by rswiders
+- Updated for today's patch
+
+6 May 2009 by ieatacid
+- Added spawn.Owner which returns a spawn type for a mercenary's owner
+
+26 April 2009 by ieatacid
+- Fixed group role issues
+
+08 April 2009 by ieatacid
+- TOTAL_SPELL_COUNT fix
+
+07 April 2009 by rswiders, dkaa, ieatacid
+- Updated for today's patch
+
+29 March 2009 by ieatacid
+- Added Me.Mercenary which returns one of the following: SUSPEND, ACTIVE, NULL, UNKNOWN
+
+21 March 2009 by ieatacid
+- Me.CombatAbilityTimer and Me.CombatAbilityReady should now function correctly
+
+19 March 2009 by rswiders
+- Updated for today's patch
+
+15 March 2009 by ieatacid
+- Fix for active leadership abilities
+- Fix for GetCombatAbilityTimer crash (dkaa)
+
+12 March 2009 by ieatacid, rswiders
+- Updated for today's patch
+
+09 March 2009 by rswiders
+- Fixed aura (by name).  You can determine if an aura is active with Me.Aura[#aura name effect].ID
+- Fix for buff stacking issue
+- Cleaned up merc names for Group.Member[#]
+
+12 February 2009 by dkaa, ieatacid, rswiders
+- Fixed pet buff window information/stackspet
+- Fixed NPCCorpse mapfilter toggle
+
+12 February 2009 by ieatacid, rswiders
+- Updated for the patch on the 11th
+
+9 February 2009 by rswiders
+- Added exact match option to spawn searchs (use a "=" immediately preceeding the name being searched for)
+- Updated named mob identification.  Named mobs will not exist in non-combat zones and warders, familiars, etc. have been demoted from their named status.
+- Added /mapfilter option for named spawns (will toggle between named/normal npcs when npc filtering is active)
+- Updated /mapfilter corpse as a master toggle for PC/NPC corpses.  When active, you can toggle PC/NPC filtering using PCCorpse/NPCCorpse respectively.
+- Added Faycites, Chronobines as additional alternate currencies
+
+31 January 2009 by dkaa
+- added "targetable" as a spawn search modifier
+
+20 January 2009 by ieatacid, dkaa
+- Updated for today's patch
+
+18 January 2009 by ieatacid
+- Adjusted spawn types for banners.  The client lists the following races as banners: 500, 553-557, 586
+
+17 January 2009 by ieatacid
+- Added "/mqclear" command to MQ2ChatWnd which, you guessed it, clears the MQ2 chat window.  This does it the right way and removes all text from the window, unlike some plugins I've seen that just add 11ty new lines (\n) to the chat window
+- Fixed "/setautorun".  It was saving incorrectly so AutoRun ini entries would never be processed (thanks pms)
+- The "/dosocial" command should now work properly
+
+11 January 2009 by ieatacid, rswiders
+- Events will once again trigger on "You have entered <zone name>."
+- Completed formatting corrections for using spaces vs. tabs
+- Corrected bug with spawnsearch.  Spawn[id 0] WILL NO LONGER return the same values as ${Me}.  You have been warned.
+- Corrected spell stacking bug with some new spells (.Stacks/.WillStack)
+
+29 December 2008 by dkaa
+- added params to the /exec command (thanks three-p-o)
+
+11 December 2008 by dkaa
+- fixed a bug in the pet window with BuffFadeETA
+- turned of macro error logging by default because it causes crashes if the log file is unwriteable
+
+11 December 2008 by rswiders
+- updated for today's patch
+
+10 December 2008 by rswiders, ieatacid, dkaa
+- updated for today's patch
+
+10 December 2008 by dkaa
+- Macro errors are now logged to a file
+
+29 November 2008 by ieatacid
+- Removed window manager drawing of the cursor on each pulse while in screen mode 3 (UI hidden) -- not needed since EQ switched to using Windows' cursor
+
+05 November 2008 by ieatacid
+- Fixed caption crash that happened on some untargetables
+- Added "Flyer" spawn type for spawns that appear in some zones with NaN location data, which will filter them from NPC spawns
+- Fixed Me.Aura bug when passing a number to it
+
+03 November 2008 by dkaa
+- added Triple Attack to skills.h
+
+29 October 2008 by rswiders
+- Updated for today's patch
+
+27 October 2008 by ieatacid
+- Removed BuffUpdate from the target type. It's no longer cleared when you switch/release targets and, as such, serves no real purpose
+
+22 October 2008 by ieatacid
+- Added mercenary as a spawn type and map filter option
+- Added bool mercenary to groupmember type
+- Me.Aura now can now receive an index to access more than one aura (no index defaults to the first aura)
+
+21 October 2008 by rswiders
+- Updated for October 21st patch
+
+19 October 2008 by dkaa
+- fixed the problem with the first line of macro not being run if /macro 
+    was invoke within a macro.
+
+17 October 2008 by rswiders
+- Added Spawn.Loc and .LocYX.  Loc is a float formatted string, LocYX is an int formatted string.
+- Display permanent buff timers as "Perm" not "-0:18"
+- Misc source cleanup
+
+12 October 2008 by ieatacid
+- Added BuffDuration to target type. It takes the buff name or number as a parameter and returns a ticks type.
+- Added to Group TLO: string MainTank, string MainAssist, string Puller
+- Added to groupmember type: bool MainTank, bool MainAssist, bool Puller
+
+11 October 2008 by rswiders
+- Update mappable commands with all correct values, looks like it was not done in initial patch
+- Update for Me.State.  If you are on a mount it will return "MOUNT" instead of continuing on and returning "STAND"
+
+11 October 2008 by dkaa
+- Fix for mappable commands -- thanks, brainiac
+- Fix for class type 71, merc liaison.
+
+10 October 2008 by dkaa
+- Fix for VC6 compile problems.
+
+09 October 2008 by ieatacid
+- Changed target TLO. It now uses the new TargetType which inherits the spawn type.  The TargetType contains the following members:
+   Buff (access to spell type): returns the target's spell by index (${Target.Buff[n]}) or name (${Target.Buff[name]}).  If no index is given (${Target.Buff}) it returns the first spell name or "NULL" if the target has no buffs
+   BuffCount: returns the number of buffs on the target
+   BuffUpdate: since there's a delay between when you target a spawn and when you get their buff data, this lets you know if the buff data is available
+      
+09 October 2008 by ieatacid, dkaa, rswiders
+- Updated for October 7th patch
+- Added spawn type members: CurrentMana, MaxMana, Current Endurance, MaxEndurance -- these behave like CurrentHPs (only updated when you target a spawn)
+
+08 September 2008 by ieatacid
+- Added Level to groupmember type
+
+07 September 2008 by rswiders, ieatacid
+- Fixed Group.Member[x].Name and .Leader 
+
+06 September 2008 by rswiders
+- Fixed Group.Member[x].Name
+
+05 September 2008 by rswiders
+- Fixes for group CTD issues
+- Added Group.GroupSize back in... it's in the html manual but wasn't in the source
+
+05 September 2008 by rswiders, dkaa
+- Fix for v6 compiles
+
+05 September 2008 by ieatacid, rswiders, dkaa
+- Updated for today's patch
+
+21 August 2008 by dkaa
+- Add Tradeskills to TLO Item courtesy of brainiac
+
+20 August 2008 by ieatacid
+- Added Counters to the character type (total number of detrimental counters you have) and Counter to the buff type (counters per buff)
+
+11 August 2008 by ieatacid
+- Updated for today's patch
+
+17 July 2008 by ieatacid, rswiders
+- Updated for today's patch
+- Added a bunch of stat bonus stuff to the character type (differentiation).  See this thread for more info: http://macroquest2.com/phpBB2/viewtopic.php?t=15646
+
+14 July 2008 by ieatacid
+- Added "PCCorpse" map filter to MQ2Map, "Corpse" filter now just works on NPC corpses. Default color is the same as default NPC corpse color.
+
+14 July 2008 by dkaa
+- Fixed the pet info wnd struct
+
+9 July 2008 by ieatacid, rswiders
+- Updated for today's patch
+
+19 June 2008 by dkaa
+- added augs to item TLO -- thanks dewey2461
+
+19 June 2008 by dkaa
+- HeroicWIZ is now HeroicWIS -- thanks dewey2461
+
+09 June 2008 by ieatacid
+- Added raidmember Raid.MainAssist
+- Added function EQPlayer *GetSpawnByName(char *spawnName)
+- Changed some stuff that used map::SpawnByName to use GetSpawnByName (should fix other stuff)
+
+29 May 2008 by ieatacid, dkaa, rswiders
+- Updated for today's patch
+
+23 May 2008 by rswiders
+- Updated class descriptions (DoN Merchants / Fellowship Registrar)
+
+22 May 2008 by rswiders, ieatacid
+- Updated for today's patch
+
+22 May 2008 by rswiders
+- Added dead, stunned, hovering to Spawn TLO
+- Fixes to getspellduration
+
+12 May 2008 by dkaa
+- Added Friends TLO
+
+7 May 2008 by rswiders, ieatacid
+- Updated for today's patch
+
+24 April 2008 by rswiders, ieatacid
+- Updated for today's patch
+
+17 April 2008 by rswiders, ieatacid, dkaa
+- Updated for today's patch
+
+1 April 2008 by ieatacid, dkaa
+- Updated for today's patch
+
+17 March 2008 by ieatacid
+- Redid item tooltip timers to just use one hook.  This also allows timers to be displayed when all bag tooltips are displayed (i.e., <alt>+<mouse over> a bag)
+
+10 March 2008 by dkaa
+- Fix for #XXXXXX color processing. Thanks QuestionTheAnswers.
+
+7 March 2008 by ieatacid
+- "some dev please do a new zip and be sure it contains the new ISXEQ.NET folder, thx (Lax)"
+
+28 February 2008 by rswiders, ieatacid
+- Updated for today's patch
+
+7 February 2008 by ieatacid
+- Fixed /buyitem and /sellitem to work with stacks of up to 100 -- includes a sanity check so you don't request a stack size from the server that's greater than what's allowed for that item (so, theoretically, you can do "/buyitem 100" on everything to always buy the max stack size of the selected item)
+
+6 February 2008 by ieatacid, rswiders
+- Updated for today's patch
+
+26 January 2008 by ieatacid
+- Added ticks type Me.Downtime (the time left on your combat timer)
+- Added to the item TLO: EnduranceRegen, HealAmount, Clairvoyance,
+  DamageShieldMitigation, SpellDamage, and all the Heroic stats
+
+21 January 2008 by dkaa
+- Added a list of actor defs for ground items.
+
+19 January 2008 by rswiders
+- Fixed /lootall command
+
+18 January 2008 by rswiders
+- Added Macro.Paused, Spawn.StandState
+
+17 January 2008 by ieatacid, rswiders, dkaa
+- Updated for latest patch
+
+2 January 2008 by ieatacid
+- Changed "/cast item" so that it should now work on all items
+
+24 December 2007 by ieatacid
+- Added adjustable HUD font size (off by default)
+   To enable it set "UseFontSize=on" in the [MQ2HUD] section
+   in MQ2HUD.ini and edit each HUD line to match this format:
+      TYPE,SIZE,X,Y,RED,GREEN,BLUE,TEXT
+   Example:
+      LastTell=3,2,401,0,255,0,LastTell:  ${MacroQuest.LastTell}
+   becomes this with a font size of 4:
+      LastTell=3,4,2,401,0,255,0,LastTell:  ${MacroQuest.LastTell}
+   * Valid sizes are 0-11.
+
+17 December 2007 by dkaa
+- Added brainiac's /mqfont fix
+
+12 December 2007 by ieatacid, dkaa
+- Updated for today's patch
+
+7 December 2007 by rswiders
+- added new /lootall command
+- removed rk. II/III spell handling... use exact spell names
+- fixed /zonehud command and hud zone processing
+- added MQ2 crash detection processing back in
+
+5 December 2007 by ieatacid
+- Updated for today's patch
+
+25 November 2007 by ieatacid
+- "/shift /click right target" will now loot all items on a corpse
+
+20 November 2007 by rswiders, ieatacid
+- Updated for today's patch
+
+17 November 2007 by dkaa
+- fixed SPELLFAVORITE
+- fixed the crappy Rk. II/III handling
+- fixed a crash on zoning
+
+14 November 2007 by ieatacid, rswiders, dkaa
+- Updated for November 13th patch
+
+8 November 2007 by rswiders, ieatacid
+- Updated for today's patch
+
+30 October 2007 by ieatacid, rswiders
+- Updated for today's patch
+
+08 October 2007 by dkaa
+- fixed calc where '...) - <expr>' was treated as negate instead of subtract
+
+27 September 2007 by dkaa
+- fixed /next
+
+17 September 2007 by ieatacid
+- Added Me.Fellowship
+  * fellowship  type members:
+      int ID: fellowship ID
+      string Leader: leader's name
+      string MotD: message of the day
+      int Members: number of members in fellowship
+      fellowshipmember Member: member info by index (1-9) or name
+      ticks CampfireDuration: how much time is left on campfire
+      float CampfireY: self explanatory
+      float CampfireX: "
+      float CampfireZ: "
+      zone CampfireZone: zoneinfo for the campfire
+      bool Campfire: TRUE if campfire is up, FALSE if not
+      to string: TRUE or FALSE
+  * fellowshipmember type members:
+      zone Zone: zoneinfo for this player
+      int Level: this player's level
+      class Class: class info for this player
+      ticks LastOn: when this player was last online
+      to string: player name
+
+7 September 2007 by ieatacid
+- Updated for patch
+
+6 September 2007 by ieatacid
+- Updated for patch
+
+15 August 2007 by ieatacid, rswiders, dkaa
+- Updated for patch(es)
+
+25 July 2007 by ieatacid, dkaa
+- Updated for today's patch
+
+23 July 2007 by rswiders
+- Added Campfires to spawn searchs and mapfilters
+
+16 July 2007 by dkaa
+- fixed NearestSpawn to work correctly with loc
+
+12 July 2007 by ieatacid
+- Updated for Today's patch
+- Wrote our own version of EQ's get_melee_range function (thanks Purple for the help with fcomp flags!).
+- Added more stuff to item TLO
+
+6 July 2007 by ieatacid, rswiders
+- Updated for July 5th patch
+- Some of the text coloring was removed from MQ2ItemDisplay since EQ now colors the item name green or red if you can or can't use the item (EQ also handles this text differently now).
+
+17 June 2007 by ieatacid
+- '/click left <x> <y>' works again.  It's now possible to
+  click tradeskill containers and ground spawns.  This only
+  works on the actual game play environment.  It does not
+  work on UI windows (there are existing commands for that)
+  or anything out of the viewport area.
+- Added '/click left center' to click the center of the viewport area
+- Added the following to the macroquest TLO:
+  * ViewportX - left edge of the viewport area
+  * ViewportY - top edge of the viewport area
+  * ViewportXMax - right edge of the viewport area
+  * ViewportYMax - bottom edge of the viewport are
+  * ViewportXCenter - center of the viewport area going from left to right
+  * ViewportYCenter - center of the viewport area going from top to bottom
+  * LClickedObject - successfully clicking a ground spawn, TS container,
+    NPC, or PC (using '/click left center|<x> <y>') will set this to TRUE
+- Removed the /mouseto command since it no longer did anything
+
+10 June 2007 by rswiders, dkaa
+- Added clicking links with /notify.  Use /notify ChatWindow CW_ChatOutput link <link structure>
+  The link structure consists of 44 characters of the link starting with the 2nd character of the item id (ie, drop the leading 0).
+
+9 June 2007 by ieatacid
+- Tell windows will now trigger events and '#chat tell'
+
+6 June 2007 by ieatacid
+- Updated for today's patch
+
+28 May 2007 by ieatacid
+- Added character TLO members Doubloons, Orux, Phosphenes and Phosphites (alternate currencies)
+
+20 May 2007 by ieatacid
+- Added item TLO members Power and MaxPower (both for power sources) and Purity
+
+19 May 2007 by dkaa
+- added a bunch more stuff to the item TLO
+
+18 May 2007 by dkaa
+- added AC, HP, STR, STA, AGI, DEX, CHA, INT, WIS, Mana for items.  thanks equser2002.
+
+17 May 2007 by dkaa
+- Fixed the chat wnd
+
+16 May 2007 by ieatacid
+- Updated for today's patch
+
+20 April 2007 by ieatacid
+- Updated for today's patch
+
+19 April 2007 by dkaa, ieatacid, eqmule
+- fix for opcode detection to restore plugin zoning functions
+- outgoing messages via SendEQMessage are disabled.  this means
+    /click left item, /bzsrch, and /pricecheck are not functional
+
+18 April 2007 by ieatacid, dkaa
+- Updated for today's patch
+- Updated MQ2EQBugFix to stop a crash that occurs when going from character select to server select (thanks cronic).  This may only be WinEQ2-related, but it's there should you want to use it.
+
+6 April 2007 by rswiders
+- Added Banners to spawn searchs and mapfilters
+- Spell stacking changes are back...
+.. Stacking of spells with themselves will occur again.  For .Stacks and .StacksPet they take
+.. a new parameter [###].  This will check the duration left on the spell, if the duration left is
+.. less then the parameter value the spell will show it stacks with itself.  To retain old behavior
+.. use [0] for the parameter (.Stacks[0] and .StacksPet[0] retain old behavior)
+.. example - .Stacks[4] will return TRUE when less then 4 ticks remain on the spell buff in question
+
+5 April 2007 by ieatacid
+- Updated for today's patch
+
+15 March 2007 by ieatacid, dkaa
+- Updated for March 14th patch
+
+21 February 2007 by ieatacid
+- Updated for today's patch
+
+19 February 2007 by rswiders
+- Fix for campfire objects
+- Fix for short buffs
+- Fix for label of last target on map
+
+17 February 2007 by ieatacid
+- Fixed _SPAWNINFO.Mount
+
+17 February 2007 by ieatacid
+- Fixed item Clicky/Proc/Worn/Focus stuff not working
+- Added dkaa's _EQLOOTWINDOW fix (${Corpse.Item} stuff should now work correctly)
+
+17 February 2007 by dkaa
+- changed the EQ_END_ZONE to the correct value
+- changed the bag slot numbers to start at 262 from 251.  See: http://www.eqinterface.com/forums/showthread.php?p=94698&highlight=262#post94698
+
+16 February 2007 by ieatacid, dkaa
+- Updated for The Buried Sea expansion.  New "Power Source" item slot means slot changes:
+ * Slots charm through waist are the same (0-20), "Power Source" is 21, 22 is ammo, 23 - 30 are inventory (bag) slots
+
+17 January 2007 by ieatacid
+- Updated for today's patch
+
+14 January 2007 by rswiders
+- Fix for zone translocate spell information crash displaying items
+- Changes to spell stacking (spells will say they stack with themselves)
+
+12 January 2007 by ieatacid
+- Fix for Me.Aura for Monk auras (spelling error on SoE's part :o)
+- dkaa told me about an AuraMgr struct and how it relates to AuraInfo -.-
+- Added charinfo svChromatic, svPrismatic (Charisa)
+
+2 January 2007 by rswiders
+- Fix for npcs and objects
+
+30 December 2006 by ieatacid
+- Added DynamicZone TLO which has the following members
+.. string Name
+.. int Members
+.. int MaxMembers
+.. dzmember Member (number or string as a parameter)
+.. dzmember Leader
+.. to string - same as Name
+- Added dzmember type, with members:
+.. string Name
+.. string Status - returns: Unknown, Online, Offline, In Dynamic Zone (no idea what this
+   is, it's in the exe), Link Dead
+.. to string - same as Name
+
+23 December 2006 by rswiders
+- Updates for GetSpellEffectName, ShowSpellSlotInfo (differentiation, pinkfloydx33)
+- Updates for Counters in datatypes (pinkfloydx33)
+
+14 December 2006 by ieatacid
+- Updated for today's patch
+
+7 December 2006 by dkaa
+- Fix for NoDrop & NoRent
+
+6 December 2006 by ieatacid, dkaa
+- Fixed for Dec 5th patch
+
+7 November 2006 by ieatacid
+- MQ2ChatWnd should now remain visible while in hover state
+
+31 October 2006 by ieatacid
+- Fix for Halloween crash
+
+25 October 2006 by ieatacid, rswiders
+- Updated for today's patch
+
+23 October 2006 by ieatacid
+- Added Spell.MyRange.  This is YOUR actual cast range, including extended range from focus effects.
+
+10 October 2006 by ieatacid
+- Added "HOVER" for use with Me.State
+- Added bool InHoverState() to MQ2Utilities.cpp
+
+4 October 2006 by rswiders
+- Updated for today's patch
+
+2 October 2006 by ieatacid
+- Added "object" to /mapfilter. Objects are things like catapults, tents, practice dummies, etc.
+
+27 September 2006 by ieatacid
+- Updated for today's patch
+
+23 September 2006 by dkaa, ieatacid
+- fix for gbInZone, Me.FreeBuffSlots, AA-related stuff, MQ2EQIM compile errors
+
+19 September 2006 by ieatacid
+- Updated for Serpent's Spine expansion release. Many new changes - the important stuff is listed below
+- Skill members SkillCapPre50, SkillCapPre65 and SkillCapPre70 were removed and replaced with int SkillCap.  This returns the skill cap based on your class and current level
+- New character members:
+    1) string CombatState - returns one of the following: COMBAT, DEBUFFED, COOLDOWN, ACTIVE, RESTING.  The same as the new icon in the player info window
+    2) int svCorruption - character's Corruption resist
+- Added Prismatic and Corruption to spell ResistType
+- MQ2ItemDisplay now shows corruption resist
+- "GREY" added to spawn.ConColor
+- Plugin authors:
+  * Skill stuff has been changed
+      Lines like this:
+        if(SkillDict[EQADDR_DOABILITYLIST[nSkill]]->AltTimer==2)
+      Need to be changed to this:
+        if(pSkillMgr->pSkill[EQADDR_DOABILITYLIST[nSkill]]->AltTimer==2)
+
+3 September 2006 by ieatacid
+- Changed the way we handle con-colors.  We now use EQ's function rather than calculate it ourselves.
+
+30 Aug 2006 by dkaa
+- incorporate change from Ceghkmv and teabag to fix the xml file stuff
+
+28 August 2006 by ieatacid
+- Changed spawninfo's pCharInfo member to 'void *pCharInfo_vtable2' since it points to vtable2 in charinfo and made changes where necessary to reflect this.
+  Now things like "/itemnotify in bank1 1 leftmouseup" should work properly.
+- Added spawn.Buyer
+
+25 Aug 2006 by dkaa
+- duel->dual
+- aura fix for when you don't have an aura
+
+15 August 2006 by ieatacid
+- Added Me.ActiveFavorCost
+
+5 August 2006 by Amadeus
+* Added a new member to the 'string' datatype.
+  1. Replace[ToReplace,ReplaceWith]
+     a. This member will return a string replacing every instance of
+        'ToReplace' with 'ReplaceWith'.  It will work for both strings 
+        and individual characters.  IT IS CASE SENSITIVE.   
+     ~ Example: echo ${Me.Name.Replace["Amadeus","Maestro"]}
+                echo ${Me.Name.Replace[",","."]}  
+* Added a custom 'label' that you can put in your macros -- ":OnExit".
+  Anything included after that label will be called whenever an /endmacro
+  command is issued.  To use this feature, the label must be at the end 
+  of your 'Sub Main' function and end with a /return.  Please note that 
+  this is NOT required of macros, so no macros will have to be altered 
+  unless you wish to take advantage of this feature.  (See my posting
+  on the messageboards for an example of how to use this.)
+
+25 July 2006 by ieatacid
+- Added leadership ability members to character type that return
+  the ability level of *active* leader abilities.
+  ** LAMarkNPC, LANPCHealth, LADelegateMA, LADelegateMarkNPC,
+     LAInspectBuffs, LASpellAwareness, LAOffenseEnhancement,
+     LAManaEnhancement, LAHealthEnhancement, LAHealthRegen,
+     LAFindPathPC, LAHoTT.
+
+20 July 2006 by dkaa
+- Fix for the 7/18 patch
+- Fix to the ITEMINFO size 
+
+17 July 2006 by ieatacid
+- Added spell Me.Aura (this applies to your self-aura that is shown in the aura window)
+
+13 July 2006 by ieatacid
+- Added to item type: Evolving which has the following members
+      ExpPct
+      ExpOn
+      Level
+      MaxLevel
+    Example: ${FindItem[some evolving item].Evolving.ExpPct} 
+- Some UI struct fixes
+- /windowstate now works without screwing up the UI state
+
+8 July 2006 by Amadeus
+- Updated ISXEQ to compile a bit better with Visual Studio 2005
+- Added ISXEQ project/solution file(s) for Visual Studio 2005.
+  1. Double-click on "MQ2Auth.exe" (duh)
+  2. Open Visual Studio 2005
+  3. Click on File->Open->Project/Solution ..and select "ISXEQ-VS2005"
+  4. Build All.
+  5. The DLL files will be built in a directory in your primary MQ folder 
+     called "ISXEQ Release Files".  Simply move all of the DLL files from
+     that directory to your /InnerSpace/Extensions directory.
+  ** You will get a few warnings; however, if your library/headers are set  
+     up correctly and the ISXDK is installed properly, you should be able
+     to compile out-of-the-box.
+- Updated the VS2003 solution file ("ISXEQ") to include only ISXEQ projects
+  and disable compilation of ISXEQLegacy (since it is currently broken).
+- Please note that these VS2005 project files are only for ISXEQ.  If you
+  still use MQ2, you can ignore this.
+
+
+
+5 July 2006 by ieatacid
+- added Me.Language (ex. ${Me.Language[1]} returns "Common Tongue"; ${Me.Language[Common Tongue]} returns 1)
+- fixed zoned.cfg to load properly after zoning, also .cfg files that use zone short names
+
+29 June 2006 by ieatacid
+- added int MacroQuest.ChatChannels (returns number of channels currently joined)
+- added MacroQuest.ChatChannel (ex. ${MacroQuest.ChatChannel[MQChat]} returns true if the channel "MQChat" is joined (bool); ${MacroQuest.ChatChannel[1]} returns the name of chat channel 1 (string))
+
+28 June 2006 by rswiders, ieatacid
+- fix for 6/28 patch
+- fix for gbInZone on initial load
+
+27 June 2006 by ieatacid
+- added bool Me.AutoFire
+
+16 June 2006 by rswiders, dkaa, ieatacid, and others...
+- fix for 6/16 patch
+
+10 June 2006 by rswiders
+- added Aura to spawn searches and mapfilter
+- added spellradius to map for a second radius circle on the map
+
+1 May 2006 by dkaa
+- fix the previous fix
+
+30 Apr 2006 by rswiders
+- added Me.TributeTimer, Me.RadiantCrystals, Me.EbonCrystals
+- added Me.Shrouded, UseSkill, LoH/HT Ready (ieatacid)
+
+20 Apr 2006 by rswiders
+- fix for isxeq compile issue
+
+19 Apr 2006 by dkaa, rswiders
+- updated for 4/19 patch
+- added spawn.IsNamed
+- added personal tribute and radiant/ebon crystals to CHARINFO
+
+31a Mar 2006 by dkaa
+- fixed the VS6 build
+
+31 Mar 2006 by dkaa
+- Added stuff to item type
+    Classes
+    Class
+    Races
+    Race
+    Deities
+    Deity
+    RequiredLevel
+- Added DisplayItem TLO as item type to mq2itemdisplay
+- Added /ireset to reset DisplayItem ID 
+
+29 Mar 2006 by dkaa
+- Fixed /sellitem
+
+27 Mar 2006 by dkaa
+- Fixed the CSidlScreenWnd struct
+
+24 Mar 2006 by dkaa
+- Fix the container manager struct
+
+23 Mar 2006 by rswiders
+- Various cleanup from PoR patch
+- Access to the 8 new bank slots
+
+22 Mar 2006 by dkaa
+- Added a message box for plugin load failure
+
+16 Mar 2006 by Lax
+- Various ISXEQ-related updates
+- Blech updated to fix Feed reentrancy issue (not a problem in MQ2 macros, but with
+  plugins it would have introduced crashes)
+
+14 Mar 2006 by dkaa
+- Added MacroQuest.Ping from ieatacid
+
+04 Mar 2006 by Lax
+- Various ISXEQ-related fixes.  Removed the &s from EzDetour to be consistent, and
+  added the &s manually where required
+
+03 Mar 2006 by dkaa
+- fixed the loading screen captions
+- fixed crash on right click on map on ground item
+
+late Feb 2006 by lots of people
+- stuff to get up and running after expansion
+    
+29 Jan 2006 by rswiders
+- Fix to spawninfo struct from merge
+
+29 Jan 2006 by rswiders
+- Fix to re-add class based cfg file loading upon entering game
+- Added global bool for telling if you are zoning or not (gbInZone)
+- Added .GroupSize
+- Fix to allow non-stackable items to return counts in .Stacks, .StackCount, .FreeStack
+- Added LoS parameter to spawn searches
+
+18 Jan 2006 by rswiders
+- Updated for 01/18 patch
+
+05 Jan 2006 by dkaa
+- Fixed the crash on re-entering the game
+
+20 December 2005 by rswiders
+- Fixed to compile in VC++ 6.0
+
+19 December 2005 by rswiders
+- Corrected offset comments in several structures
+- Fixed Item.Timer issue for insta-click/instant refresh items
+- Added item timers to potion belt window tooltips
+- Added Item.StackSize, .Stacks, .StackCount, .FreeStack, .TimerReady
+- Added class based cfg file loading upon entering game
+
+16 December 2005 by dkaa
+- Fix for Merchant.BuyPrice
+
+15 December 2005 by rswiders
+- Fix for MaxMana, MaxEndurance
+
+15 December 2005 by rswiders, dkaa
+- Fix for MaxHPs
+- Fix for Item.timer
+
+15 December 2005 by rswiders
+- Updated for 12/15 patch
+- Fixes Item.Timer returning 0 too early
+- Added Merchant.Full (thanks cronic)
+
+13 December 2005 by rswiders
+- Fixed SWho display of primary/offhand for spawns
+- Fixed blocking issue in .Stacks for heal conversion type spells
+- Located more missing fields from 12/07 patch
+- Added MQ2LoadingMsg to macroquest2.ini to allow you to configure 
+  the MQ2 evolution in action message to be displayed or not.
+
+12 December 2005 by rswiders
+- Fixed Me.Levitating
+
+11 December 2005 by rswiders
+- Corrected offset comments in several structures
+- Added /classhud and /zonehud commands. Automatically load [class] or [zonename] huds.
+- Added SpeedMultiplier into spawninfo
+- Fixed Item.Stack
+- Fixed /doors command (_DOORS and _EQSWITCH structures changed). Other switches may have
+  been effected and fixed with this also.
+
+10 December 2005 by rswiders, dkaa
+- Updated for 12/07 patch
+- PACTORINFO was removed, _ACTORINFO fields were merged into _SPAWNINFO
+- Changed item.timer to a ticks type
+
+5 December 2005 by rswiders
+- More cleanup of several class function declarations
+- Another fix to .Stacks/.WillStack to not fail if the same slot is a blocking slot
+- Added endurancecost to SPELL (thanks s0rCieR)
+- Added item timer to tooltips (thanks ieatacid)
+
+30 November 2005 by rswiders
+- Clean up of several class function declarations
+- Cleanup of CombatAbilility, CombatAbilityReady and CombatAbilityTimer. They are now using
+  the EQ functions. Cleanup of several functions to use EQ function GetAltAbilityIndex
+  instead of accessing the charinfo structs directly.
+- Fixed Me.State so it recognizes "STUN" correctly
+- Fixed GetAAIndexByName, GetAAIndexByID
+- Fixed Me.FreeBuffSlots to include the additional slot you get when you get either the
+  "Embrace of the Keepers" or "Embrace of the Dark Reign" aa's.
+- Fixed bounds issues on RequiresAbility, GetAANameByIndex, GetAAIndexByName, and GetAAIndexByID
+- Fixed .Stacks/.WillStack to allow self buffs (with a healing component) to stack correctly
+- Added: Spawn.Fleeing
+    Currently this works with your target that is engaged in combat. If it turns to flee
+    this flag is set for use in macros. It checks to see if the heading of the spawn is
+    facing in a direction that is not in an arc of 120 degrees facing you.
+- If you are crashing on switching toons at character select,
+  you can comment out the autorun (per character) section in
+  MQ2Pulse.cpp. This is only needed if you want to automatically
+  process commands upon initial entering of world for a
+  character. If you don't use the feature commenting it out will
+  not cause any lose of functionality for you. Please post any CTD
+  crash dumps to assist with locating this bug.
+
+22 November 2005 by rswiders
+- Added Item.ItemDelay
+- Config files can contain comment lines. Use ";" as the first character on the line to make it a comment.
+- Updated resistadj location in _SPELL struct
+
+18 November 2005 by rswiders
+- Fixed resists bug
+
+18 November 2005 by dkaa
+- Added TLOs DoorTarget and ItemTarget
+
+17 November 2005 by Lax
+- Separated functionality from do_ranged command for use from plugins.  Do this for any case where
+  DoCommand has been used, and submit code changes.  This example has been done for you.
+
+17 November 2005 by dkaa
+- Added Cr4zyb4rd's hud extensions
+
+16 November 2005 by rswiders
+- updated offset for 11/16 patch
+- updated changes to charinfo struct for 11/16 patch
+
+15 November 2005 by Lax
+- Turned MacroQuest into swiss cheese with some more #ifdef blocks to support new ISXEQ functionality
+  that allows it to run legacy MQ2 "macros"
+
+11 November 2005 by dkaa
+- remove the ability to use "fake" targets (door & items)
+- added item timers to itemdisplay
+
 01 November 2005 by dkaa
 - updated offset for 11/01 patch
 - /caption <list|type <value>|update #|MQCaptions <on|off>>

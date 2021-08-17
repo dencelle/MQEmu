@@ -23,84 +23,70 @@
 
 enum UIType CXWnd::GetType()
 {
-	if (CXMLData *pXMLData=GetXMLData())
-		return pXMLData->Type;
-	return UI_Unknown;
+    if (CXMLData *pXMLData=GetXMLData())
+    return pXMLData->Type;
+    return UI_Unknown;
 }
 
 enum UIType CSidlScreenWnd::GetType()
 {
-	if (CXMLData *pXMLData=GetXMLData())
-		return pXMLData->Type;
-	return UI_Unknown;
+    if (CXMLData *pXMLData=GetXMLData())
+    return pXMLData->Type;
+    return UI_Unknown;
 }
 
 class CXMLData * CXWnd::GetXMLData()
 {
-	if (XMLIndex)
-		return ((CXMLDataManager*)&((PCSIDLMGR)pSidlMgr)->pXMLDataMgr)->GetXMLData(XMLIndex>>16,XMLIndex&0xFFFF);
-	DebugSpew("CXWnd::GetXMLData()=0");
-	return 0;
+    if (XMLIndex)
+        return ((CXMLDataManager*)&((PCSIDLMGR)pSidlMgr)->pXMLDataMgr)->GetXMLData(XMLIndex>>16,XMLIndex&0xFFFF);
+    //DebugSpew("CXWnd::GetXMLData()=0");
+    return 0;
 }
 class CXMLData * CSidlScreenWnd::GetXMLData()
 {
-	if (XMLIndex)
-		return ((CXMLDataManager*)&((PCSIDLMGR)pSidlMgr)->pXMLDataMgr)->GetXMLData(XMLIndex>>16,XMLIndex&0xFFFF);
-	DebugSpew("CSidlScreenWnd::GetXMLData()=0");
-	return 0;
+    if (XMLIndex)
+        return ((CXMLDataManager*)&((PCSIDLMGR)pSidlMgr)->pXMLDataMgr)->GetXMLData(XMLIndex>>16,XMLIndex&0xFFFF);
+    //DebugSpew("CSidlScreenWnd::GetXMLData()=0");
+    return 0;
 }
+
+// fuck -- if you try to use the native GetChildItem, then
+// it fails to find things without a ScreenID
+
+class CXWnd *RecurseAndFindName(class CXWnd *pWnd, PCHAR Name)
+{
+    CHAR Buffer[MAX_STRING]={0};
+    class CXWnd *tmp;
+
+    if (!pWnd) return pWnd;
+
+    if (CXMLData *pXMLData=pWnd->GetXMLData()) {
+        if (GetCXStr(pXMLData->Name.Ptr,Buffer,MAX_STRING) && !stricmp(Buffer,Name)) {
+            return pWnd;
+        }
+        //DebugSpew("RecurseAndFindName looking for %s but found %s", Name, Buffer);
+        if (GetCXStr(pXMLData->ScreenID.Ptr,Buffer,MAX_STRING) && !stricmp(Buffer,Name)) {
+            return pWnd;
+        }
+    }
+
+    if (pWnd->pFirstChildWnd) {
+        tmp = RecurseAndFindName((class CXWnd *)pWnd->pFirstChildWnd, Name);
+        if (tmp)
+            return tmp;
+    }
+    return RecurseAndFindName((class CXWnd *)pWnd->pNextSiblingWnd, Name);
+}
+
 class CXWnd * CXWnd::GetChildItem(PCHAR Name)
 {
-	CXWnd *pWnd;
-	if (HasChildren)
-		pWnd=(CXWnd*)pChildren;
-	else
-		pWnd=pWndMgr->GetFirstChildWnd(this);
-	DebugSpew("CXWnd::GetChildItem(%s). pWnd=0x%08X",Name,pWnd);
-	CHAR Buffer[MAX_STRING]={0};
-	while(pWnd)
-	{
-		if (CXMLData *pXMLData=pWnd->GetXMLData())
-		{
-			DebugSpew("GetChildItem() Got pXMLData",Name,pWnd);
-			if (GetCXStr(pXMLData->Name.Ptr,Buffer,MAX_STRING) && !stricmp(Buffer,Name))
-				return pWnd;
-			if (GetCXStr(pXMLData->ScreenID.Ptr,Buffer,MAX_STRING) && !stricmp(Buffer,Name))
-				return pWnd;
-		}
-		CXWnd *pChild=pWnd->GetChildItem(Name);
-		if (pChild)
-			return pChild;
-		pWnd=((CXWnd*)this)->GetNextChildWnd(pWnd);//pWnd=(CXWnd*)pWnd->pSiblings;
-	}
-	return 0;
+    //return GetChildItem(CXStr(Name));
+    return RecurseAndFindName(this, Name);
 }
 
 class CXWnd * CSidlScreenWnd::GetChildItem(PCHAR Name)
 {
-	CXWnd *pWnd;
-	if (HasChildren)
-		pWnd=(CXWnd*)pChildren;
-	else
-		pWnd=pWndMgr->GetFirstChildWnd((CXWnd*)this);
-	DebugSpew("CSidlScreenWnd::GetChildItem(%s). pWnd=0x%08X",Name,pWnd);
-	CHAR Buffer[MAX_STRING]={0};
-	while(pWnd)
-	{
-		if (CXMLData *pXMLData=pWnd->GetXMLData())
-		{
-			DebugSpew("GetChildItem() Got pXMLData",Name,pWnd);
-			if (GetCXStr(pXMLData->Name.Ptr,Buffer,MAX_STRING) && !stricmp(Buffer,Name))
-				return pWnd;
-			if (GetCXStr(pXMLData->ScreenID.Ptr,Buffer,MAX_STRING) && !stricmp(Buffer,Name))
-				return pWnd;
-		}
-		CXWnd *pChild=pWnd->GetChildItem(Name);
-		if (pChild)
-			return pChild;
-		pWnd=((CXWnd*)this)->GetNextChildWnd(pWnd);//(CXWnd*)pWnd->pSiblings;
-	}
-	return 0;
+    return RecurseAndFindName((class CXWnd *)this, Name);
 }
 
 class CScreenPieceTemplate *  CSidlManager::FindScreenPieceTemplate(char *str)
@@ -109,10 +95,10 @@ class CScreenPieceTemplate *  CSidlManager::FindScreenPieceTemplate(char *str)
 }
 void  CComboWnd::InsertChoice(char *str)
 {
-    InsertChoice(&CXStr(str));
+    InsertChoice(&CXStr(str),0);
 }
 
-int  CListWnd::AddString(char *p1, unsigned long p2, unsigned __int32 p3, class CTextureAnimation const *p4)
+int  CListWnd::AddString(char *p1, unsigned long p2, unsigned __int32 p3, class CTextureAnimation const *p4, const char* p5)
 {
     return AddString(&CXStr(p1), p2, p3, p4);
 }
@@ -135,14 +121,14 @@ FUNCTION_AT_ADDRESS(int EQ_Item::CanDrop(int),EQ_Item__CanDrop); // Lax 4-21-200
 ///////////////////////////////////////////////////////////////////
 // gah, i hate sony
 #ifdef EQ_Character__Max_Endurance
-FUNCTION_AT_ADDRESS(int  EQ_Character1::Max_Endurance(void),EQ_Character__Max_Endurance);
+FUNCTION_AT_ADDRESS(int  EQ_Character1::Max_Endurance(int),EQ_Character__Max_Endurance);
 #endif
 //fuck virtual
 #ifdef EQ_Character__Max_Mana 
-FUNCTION_AT_ADDRESS(int EQ_Character1::Max_Mana(void), EQ_Character__Max_Mana);
+FUNCTION_AT_ADDRESS(int EQ_Character1::Max_Mana(int), EQ_Character__Max_Mana);
 #endif 
 #ifdef EQ_Character__Max_HP
-FUNCTION_AT_ADDRESS(int  EQ_Character1::Max_HP(int),EQ_Character__Max_HP);
+FUNCTION_AT_ADDRESS(int  EQ_Character1::Max_HP(int,int),EQ_Character__Max_HP);
 #endif
 /////////////////////////////////////////////////////////////////////
 
@@ -150,14 +136,15 @@ FUNCTION_AT_ADDRESS(int  EQ_Character1::Max_HP(int),EQ_Character__Max_HP);
 FUNCTION_AT_ADDRESS(void EQ_Character::DoCombatAbility(int spellID), EQ_Character__doCombatAbility); 
 #endif 
 
+
 FUNCTION_AT_VIRTUAL_ADDRESS(void CChatWindow::operator delete[](void*),0x04);
 
 FUNCTION_AT_VIRTUAL_ADDRESS(bool CXWnd::IsValid(void)const,0);
-FUNCTION_AT_VIRTUAL_ADDRESS(int CXWnd::WndNotification(class CXWnd *,unsigned __int32,void *),0x80);
-FUNCTION_AT_VIRTUAL_ADDRESS(int CXWnd::OnResize(int,int),0x094);
-FUNCTION_AT_VIRTUAL_ADDRESS(int CXWnd::Show(bool,bool),0x0C0);
-FUNCTION_AT_VIRTUAL_ADDRESS(int CXWnd::SetVScrollPos(int),0x100);
-FUNCTION_AT_VIRTUAL_ADDRESS(void CXWnd::SetWindowTextA(class CXStr &),0xfc);
+FUNCTION_AT_VIRTUAL_ADDRESS(int CXWnd::WndNotification(class CXWnd *,unsigned __int32,void *),0x84);
+FUNCTION_AT_VIRTUAL_ADDRESS(int CXWnd::OnResize(int,int),0x098);
+FUNCTION_AT_VIRTUAL_ADDRESS(int CXWnd::Show(bool,bool),0x0C8);
+FUNCTION_AT_VIRTUAL_ADDRESS(int CXWnd::SetVScrollPos(int),0x120);
+FUNCTION_AT_VIRTUAL_ADDRESS(void CXWnd::SetWindowTextA(class CXStr &),0x118);
 
 FUNCTION_AT_VIRTUAL_ADDRESS(int CXWnd::HandleLButtonDown(class CXPoint *,unsigned __int32),0x34);
 FUNCTION_AT_VIRTUAL_ADDRESS(int CXWnd::HandleLButtonUp(class CXPoint *,unsigned __int32),0x38);
@@ -167,9 +154,11 @@ FUNCTION_AT_VIRTUAL_ADDRESS(int CXWnd::HandleRButtonDown(class CXPoint *,unsigne
 FUNCTION_AT_VIRTUAL_ADDRESS(int CXWnd::HandleRButtonUp(class CXPoint *,unsigned __int32),0x48);
 FUNCTION_AT_VIRTUAL_ADDRESS(int CXWnd::HandleRButtonHeld(class CXPoint *,unsigned __int32),0x4C);
 FUNCTION_AT_VIRTUAL_ADDRESS(int CXWnd::HandleRButtonUpAfterHeld(class CXPoint *,unsigned __int32),0x50);
+FUNCTION_AT_VIRTUAL_ADDRESS(int CXWnd::OnMinimizeBox(void),0x9c);
+FUNCTION_AT_VIRTUAL_ADDRESS(int CXWnd::SetFont(void*),0x114);
 
 
-FUNCTION_AT_VIRTUAL_ADDRESS(void CListWnd::DeleteAll(void),0x130);
+FUNCTION_AT_VIRTUAL_ADDRESS(void CListWnd::DeleteAll(void),0x15c);
 
 
 // AUTO IMPORTS
@@ -982,10 +971,13 @@ FUNCTION_AT_ADDRESS(void  CChatWindow::SetChatFont(int),CChatWindow__SetChatFont
 FUNCTION_AT_ADDRESS(void  CChatWindow::Clear(void),CChatWindow__Clear);
 #endif
 #ifdef CStmlWnd__GetSTMLText
-FUNCTION_AT_ADDRESS(class CXStr  CStmlWnd::GetSTMLText(void)const ,CStmlWnd__GetSTMLText);
+FUNCTION_AT_ADDRESS(class CXStr*  CStmlWnd::GetSTMLText(class CXStr*&)const ,CStmlWnd__GetSTMLText);
 #endif
 #ifdef CChatWindow__GetInputWnd
 FUNCTION_AT_ADDRESS(class CEditWnd *  CChatWindow::GetInputWnd(void),CChatWindow__GetInputWnd);
+#endif
+#ifdef CChatWindow__WndNotification
+FUNCTION_AT_ADDRESS(int CChatWindow::WndNotification(class CXWnd *,unsigned __int32,void *),CChatWindow__WndNotification);
 #endif
 #ifdef CColorPickerWnd__CColorPickerWnd
 FUNCTION_AT_ADDRESS( CColorPickerWnd::CColorPickerWnd(class CXWnd *),CColorPickerWnd__CColorPickerWnd);
@@ -1033,7 +1025,10 @@ FUNCTION_AT_ADDRESS( CConfirmationDialog::CConfirmationDialog(class CXWnd *),CCo
 FUNCTION_AT_ADDRESS(void  CConfirmationDialog::Init(void),CConfirmationDialog__Init);
 #endif
 #ifdef CConfirmationDialog__Activate
-FUNCTION_AT_ADDRESS(void  CConfirmationDialog::Activate(int,unsigned int,char const *),CConfirmationDialog__Activate);
+FUNCTION_AT_ADDRESS(void  CConfirmationDialog::Activate(int,unsigned int,char const *,int,int,int,int),CConfirmationDialog__Activate);
+#endif
+#ifdef CConfirmationDialog__Deactivate
+FUNCTION_AT_ADDRESS(void  CConfirmationDialog::Deactivate(void),CConfirmationDialog__Deactivate);
 #endif
 #ifdef CConfirmationDialog__ExpireCurrentDialog
 FUNCTION_AT_ADDRESS(void  CConfirmationDialog::ExpireCurrentDialog(void),CConfirmationDialog__ExpireCurrentDialog);
@@ -1058,6 +1053,9 @@ FUNCTION_AT_ADDRESS(void  CConfirmationDialog::ProcessNo(int),CConfirmationDialo
 #endif
 #ifdef CConfirmationDialog__SetNameApprovalData
 FUNCTION_AT_ADDRESS(void  CConfirmationDialog::SetNameApprovalData(char *,char *,int,int,char *),CConfirmationDialog__SetNameApprovalData);
+#endif
+#ifdef CConfirmationDialog__WndNotification
+FUNCTION_AT_ADDRESS( int CConfirmationDialog::WndNotification(class CXWnd *,unsigned __int32,void *),CConfirmationDialog__WndNotification);
 #endif
 #ifdef CContainerMgr__GetFreeContainerWnd
 FUNCTION_AT_ADDRESS(class CContainerWnd *  CContainerMgr::GetFreeContainerWnd(void),CContainerMgr__GetFreeContainerWnd);
@@ -1861,7 +1859,7 @@ FUNCTION_AT_ADDRESS(void  CInvSlot::HandleLButtonHeld(class CXPoint),CInvSlot__H
 FUNCTION_AT_ADDRESS(void  CInvSlot::DoDrinkEatPoison(class EQ_Item *,int),CInvSlot__DoDrinkEatPoison);
 #endif
 #ifdef CInvSlot__HandleRButtonUp
-FUNCTION_AT_ADDRESS(void  CInvSlot::HandleRButtonUp(class CXPoint),CInvSlot__HandleRButtonUp);
+FUNCTION_AT_ADDRESS(void  CInvSlot::HandleRButtonUp(class CXPoint *),CInvSlot__HandleRButtonUp);
 #endif
 #ifdef CInvSlot__HandleRButtonHeld
 FUNCTION_AT_ADDRESS(void  CInvSlot::HandleRButtonHeld(class CXPoint),CInvSlot__HandleRButtonHeld);
@@ -3637,7 +3635,7 @@ FUNCTION_AT_ADDRESS(void  CDisplay::PlaySoundAtLocation(float,float,float,int),C
 FUNCTION_AT_ADDRESS(long  CDisplay::SetUserRender(int),CDisplay__SetUserRender);
 #endif
 #ifdef CDisplay__GetClickedActor
-FUNCTION_AT_ADDRESS(struct T3D_tagACTORINSTANCE *  CDisplay::GetClickedActor(unsigned long,unsigned long,bool),CDisplay__GetClickedActor);
+FUNCTION_AT_ADDRESS(struct T3D_tagACTORINSTANCE *  CDisplay::GetClickedActor(unsigned long,unsigned long,unsigned long,void *,void *),CDisplay__GetClickedActor);
 #endif
 #ifdef CDisplay__CreateActor
 FUNCTION_AT_ADDRESS(struct T3D_tagACTORINSTANCE *  CDisplay::CreateActor(char *,float,float,float,float,float,float,bool,bool),CDisplay__CreateActor);
@@ -3713,6 +3711,9 @@ FUNCTION_AT_ADDRESS(void  CDisplay::SetViewActorByName(char *),CDisplay__SetView
 #endif
 #ifdef CDisplay__SetActorSpriteTint
 FUNCTION_AT_ADDRESS(void  CDisplay::SetActorSpriteTint(struct _EQRGB *,struct T3D_tagACTORINSTANCE *),CDisplay__SetActorSpriteTint);
+#endif
+#ifdef CDisplay__FreeAllItemLists
+FUNCTION_AT_ADDRESS(void  CDisplay::FreeAllItemLists(void),CDisplay__FreeAllItemLists);
 #endif
 #ifdef CActionsWnd__MainPageActivate
 FUNCTION_AT_ADDRESS(int  CActionsWnd::MainPageActivate(void),CActionsWnd__MainPageActivate);
@@ -3895,7 +3896,7 @@ FUNCTION_AT_ADDRESS(int  EQ_Character::HasSpell(int),EQ_Character__HasSpell);
 FUNCTION_AT_ADDRESS(void  EQ_Character::ResetCur_HP(int),EQ_Character__ResetCur_HP);
 #endif
 #ifdef EQ_Character__Cur_HP
-FUNCTION_AT_ADDRESS(int  EQ_Character1::Cur_HP(int),EQ_Character__Cur_HP);
+FUNCTION_AT_ADDRESS(int  EQ_Character1::Cur_HP(int,unsigned char),EQ_Character__Cur_HP);
 #endif
 #ifdef EQ_Character__GetHPFromStamina
 FUNCTION_AT_ADDRESS(int  EQ_Character::GetHPFromStamina(int),EQ_Character__GetHPFromStamina);
@@ -4105,7 +4106,7 @@ FUNCTION_AT_ADDRESS(int  EQ_Character::AntiTwinkAdj(class EQ_Equipment *,int,int
 FUNCTION_AT_ADDRESS(unsigned char  EQ_Character::GetSkillBaseDamage(unsigned char,class EQPlayer *),EQ_Character__GetSkillBaseDamage);
 #endif
 #ifdef EQ_Character__UseSkill
-FUNCTION_AT_ADDRESS(void  EQ_Character::UseSkill(unsigned char,class EQPlayer *),EQ_Character__UseSkill);
+FUNCTION_AT_ADDRESS(void  EQ_Character1::UseSkill(unsigned char,class EQPlayer *),EQ_Character__UseSkill);
 #endif
 #ifdef EQ_Character__DoIntimidationEvent
 FUNCTION_AT_ADDRESS(void  EQ_Character::DoIntimidationEvent(void),EQ_Character__DoIntimidationEvent);
@@ -4138,10 +4139,10 @@ FUNCTION_AT_ADDRESS(int  EQ_Character::NoMezMe(int,class EQPlayer *,class EQ_Spe
 FUNCTION_AT_ADDRESS(int  EQ_Character::NoBashMe(int),EQ_Character__NoBashMe);
 #endif
 #ifdef EQ_Character__StunMe
-FUNCTION_AT_ADDRESS(void  EQ_Character::StunMe(unsigned int,bool),EQ_Character__StunMe);
+FUNCTION_AT_ADDRESS(void  EQ_Character1::StunMe(unsigned int,unsigned int,unsigned int),EQ_Character__StunMe);
 #endif
 #ifdef EQ_Character__UnStunMe
-FUNCTION_AT_ADDRESS(void  EQ_Character::UnStunMe(void),EQ_Character__UnStunMe);
+FUNCTION_AT_ADDRESS(void  EQ_Character1::UnStunMe(void),EQ_Character__UnStunMe);
 #endif
 #ifdef EQ_Character__ApplyDamage
 FUNCTION_AT_ADDRESS(int  EQ_Character::ApplyDamage(int,struct _EQMissileHitinfo *,bool,class HateListEntry *,bool),EQ_Character__ApplyDamage);
@@ -4210,10 +4211,10 @@ FUNCTION_AT_ADDRESS(int  EQ_Character::GetIndexSkillMinDamageMod(int),EQ_Charact
 FUNCTION_AT_ADDRESS(int const  EQ_Character::GetFocusConserveRegChance(class EQ_Spell const *,class EQ_Equipment * *),EQ_Character__GetFocusConserveRegChance);
 #endif
 #ifdef EQ_Character__GetFocusCastingTimeModifier
-FUNCTION_AT_ADDRESS(int const  EQ_Character1::GetFocusCastingTimeModifier(class EQ_Spell const *,class EQ_Equipment * *),EQ_Character__GetFocusCastingTimeModifier);
+FUNCTION_AT_ADDRESS(int const  EQ_Character1::GetFocusCastingTimeModifier(class EQ_Spell const *,class EQ_Equipment * *, int),EQ_Character__GetFocusCastingTimeModifier);
 #endif
 #ifdef EQ_Character__GetFocusRangeModifier
-FUNCTION_AT_ADDRESS(int const  EQ_Character::GetFocusRangeModifier(class EQ_Spell const *,class EQ_Equipment * *),EQ_Character__GetFocusRangeModifier);
+FUNCTION_AT_ADDRESS(int const  EQ_Character1::GetFocusRangeModifier(class EQ_Spell const *,class EQ_Equipment * *),EQ_Character__GetFocusRangeModifier);
 #endif
 #ifdef EQ_Character__GetFocusItem
 FUNCTION_AT_ADDRESS(class EQ_Equipment *  EQ_Character::GetFocusItem(class EQ_Spell const *,int),EQ_Character__GetFocusItem);
@@ -4240,7 +4241,7 @@ FUNCTION_AT_ADDRESS(unsigned int EQ_Character::GetEffectId(int),EQ_Character__Ge
 FUNCTION_AT_ADDRESS(void  EQ_Character1::SetEffectId(unsigned char,unsigned int),EQ_Character__SetEffectId);
 #endif
 #ifdef EQ_Character__CastSpell
-FUNCTION_AT_ADDRESS(unsigned char EQ_Character1::CastSpell(unsigned char,int,class EQ_Item * *,int,int slot,int,int,int),EQ_Character__CastSpell); 
+FUNCTION_AT_ADDRESS(unsigned char EQ_Character1::CastSpell(unsigned char gemid,int spellid,class EQ_Item * *ppItem,int,int slot,int,int,int,int,bool,int),EQ_Character__CastSpell); 
 #endif
 #ifdef EQ_Character__GetBardInstrumentMod
 FUNCTION_AT_ADDRESS(int  EQ_Character::GetBardInstrumentMod(int),EQ_Character__GetBardInstrumentMod);
@@ -4339,10 +4340,10 @@ FUNCTION_AT_ADDRESS(void  EQ_Character::RemovePCAffect(class EQ_Affect *),EQ_Cha
 FUNCTION_AT_ADDRESS(void  EQ_Character::RemovePCAffectex(class EQ_Affect *,int),EQ_Character__RemovePCAffectex);
 #endif
 #ifdef EQ_Character__StopSpellCast
-FUNCTION_AT_ADDRESS(void  EQ_Character::StopSpellCast(unsigned char),EQ_Character__StopSpellCast);
+FUNCTION_AT_ADDRESS(void  EQ_Character1::StopSpellCast(unsigned char),EQ_Character__StopSpellCast);
 #endif
 #ifdef EQ_Character__StopSpellCast1
-FUNCTION_AT_ADDRESS(void  EQ_Character::StopSpellCast(unsigned char,int),EQ_Character__StopSpellCast1);
+FUNCTION_AT_ADDRESS(void  EQ_Character1::StopSpellCast(unsigned char,int),EQ_Character__StopSpellCast1);
 #endif
 #ifdef EQ_Character__ReCachSpellEffects
 FUNCTION_AT_ADDRESS(void  EQ_Character::ReCachSpellEffects(void),EQ_Character__ReCachSpellEffects);
@@ -4352,6 +4353,9 @@ FUNCTION_AT_ADDRESS(void  EQ_Character::ReCachItemEffects(void),EQ_Character__Re
 #endif
 #ifdef EQ_Character__GetCachEQSPA
 FUNCTION_AT_ADDRESS(int  EQ_Character::GetCachEQSPA(int),EQ_Character__GetCachEQSPA);
+#endif
+#ifdef EQ_Character__GetConLevel
+FUNCTION_AT_ADDRESS(unsigned long EQ_Character::GetConLevel(class EQPlayer *),EQ_Character__GetConLevel);
 #endif
 #ifdef EQ_Container__EQ_Container
 FUNCTION_AT_ADDRESS( EQ_Container::EQ_Container(void),EQ_Container__EQ_Container);
@@ -4512,6 +4516,18 @@ FUNCTION_AT_ADDRESS(unsigned char  EQ_PC::AtSkillLimit(int),EQ_PC__AtSkillLimit)
 #ifdef EQ_PC__GetItemTimerValue
 FUNCTION_AT_ADDRESS(unsigned long  EQ_PC::GetItemTimerValue(class EQ_Item *),EQ_PC__GetItemTimerValue);
 #endif
+#ifdef EQ_PC__GetAltAbilityIndex
+FUNCTION_AT_ADDRESS(int  EQ_PC::GetAltAbilityIndex(int),EQ_PC__GetAltAbilityIndex);
+#endif
+#ifdef EQ_PC__GetCombatAbility
+FUNCTION_AT_ADDRESS(int  EQ_PC::GetCombatAbility(int),EQ_PC__GetCombatAbility);
+#endif
+#ifdef EQ_PC__GetCombatAbilityTimer
+FUNCTION_AT_ADDRESS(unsigned long  EQ_PC::GetCombatAbilityTimer(int),EQ_PC__GetCombatAbilityTimer);
+#endif
+#ifdef EQ_PC__HasLoreItem
+FUNCTION_AT_ADDRESS(unsigned long  EQ_PC::HasLoreItem(class EQ_Item *),EQ_PC__HasLoreItem);
+#endif
 #ifdef CInvSlot__HandleLButtonDown
 FUNCTION_AT_ADDRESS(void  CInvSlot::HandleLButtonDown(class CXPoint),CInvSlot__HandleLButtonDown);
 #endif
@@ -4529,6 +4545,9 @@ FUNCTION_AT_ADDRESS(void  EQ_PC::CheckSkillImprove(int,float),EQ_PC__CheckSkillI
 #endif
 #ifdef EQ_PC__GetBodyTint
 FUNCTION_AT_ADDRESS(unsigned long  EQ_PC::GetBodyTint(int),EQ_PC__GetBodyTint);
+#endif
+#ifdef EQ_PC__SetAltAbilityIndex
+FUNCTION_AT_ADDRESS(void  EQ_PC::SetAltAbilityIndex(int,int),EQ_PC__SetAltAbilityIndex);
 #endif
 #ifdef EQ_PC__GetArmorTint
 FUNCTION_AT_ADDRESS(unsigned long  EQ_PC::GetArmorTint(int),EQ_PC__GetArmorTint);
@@ -5175,6 +5194,9 @@ FUNCTION_AT_ADDRESS(void  EQPlayer::UpdatePlayerVisibility(void),EQPlayer__Updat
 #ifdef EQPlayer__UpdateAllPlayersVisibility
 FUNCTION_AT_ADDRESS(void __cdecl EQPlayer::UpdateAllPlayersVisibility(void),EQPlayer__UpdateAllPlayersVisibility);
 #endif
+#ifdef EQPlayer__IsBodyType_j
+FUNCTION_AT_ADDRESS(bool EQPlayer::IsBodyType(unsigned int,int,int),EQPlayer__IsBodyType_j);
+#endif
 #ifdef EQPlayer__SetEyeMaterial
 FUNCTION_AT_ADDRESS(int  EQPlayer::SetEyeMaterial(unsigned char,int),EQPlayer__SetEyeMaterial);
 #endif
@@ -5291,6 +5313,12 @@ FUNCTION_AT_ADDRESS(bool  EQPlayer::IsInvisible(class EQPlayer *),EQPlayer__IsIn
 #endif
 #ifdef EQPlayer__IsAMount
 FUNCTION_AT_ADDRESS(bool  EQPlayer::IsAMount(void),EQPlayer__IsAMount);
+#endif
+#ifdef EQPlayerManager__GetSpawnByID
+FUNCTION_AT_ADDRESS(class EQPlayer * EQPlayerManager::GetSpawnByID(int),EQPlayerManager__GetSpawnByID);
+#endif
+#ifdef EQPlayerManager__GetSpawnByName
+FUNCTION_AT_ADDRESS(class EQPlayer * EQPlayerManager::GetSpawnByName(char *),EQPlayerManager__GetSpawnByName);
 #endif
 #ifdef EQPMInfo__EQPMInfo
 FUNCTION_AT_ADDRESS( EQPMInfo::EQPMInfo(char *),EQPMInfo__EQPMInfo);
@@ -5563,7 +5591,7 @@ FUNCTION_AT_ADDRESS(void  CEverQuest::InviteOk(char *),CEverQuest__InviteOk);
 FUNCTION_AT_ADDRESS(void  CEverQuest::doUnInvite(char *),CEverQuest__doUnInvite);
 #endif
 #ifdef CEverQuest__Invite
-FUNCTION_AT_ADDRESS(void  CEverQuest::Invite(void),CEverQuest__Invite);
+FUNCTION_AT_ADDRESS(void  CEverQuest::Invite(int),CEverQuest__Invite);
 #endif
 #ifdef CEverQuest__doInvite
 FUNCTION_AT_ADDRESS(void  CEverQuest::doInvite(unsigned __int32,char *),CEverQuest__doInvite);
@@ -5710,7 +5738,11 @@ FUNCTION_AT_ADDRESS(char *  CEverQuest::stripName(char *),CEverQuest__stripName)
 FUNCTION_AT_ADDRESS(void  CEverQuest::clr_chat_input(void),CEverQuest__clr_chat_input);
 #endif
 #ifdef CEverQuest__dsp_chat
-FUNCTION_AT_ADDRESS(void  CEverQuest::dsp_chat(char const *,int,bool),CEverQuest__dsp_chat);
+FUNCTION_AT_ADDRESS(void  CEverQuest::dsp_chat(char const *,int,bool,bool),CEverQuest__dsp_chat);
+void CEverQuest::dsp_chat(char const *a, int b, bool c) { dsp_chat(a, b, c, 1); }
+#endif
+#ifdef CEverQuest__DoTellWindow
+FUNCTION_AT_ADDRESS(void CEverQuest::DoTellWindow(char *message,char *name,char *name2,void *unknown,int color,bool b),CEverQuest__DoTellWindow);
 #endif
 #ifdef CEverQuest__dsp_chat1
 FUNCTION_AT_ADDRESS(void  CEverQuest::dsp_chat(char const *),CEverQuest__dsp_chat1);
@@ -5823,6 +5855,9 @@ FUNCTION_AT_ADDRESS(bool  CEverQuest::IsInTypingMode(void),CEverQuest__IsInTypin
 #ifdef CEverQuest__doInspect
 FUNCTION_AT_ADDRESS(void  CEverQuest::doInspect(class EQPlayer *),CEverQuest__doInspect);
 #endif
+#ifdef __do_loot
+FUNCTION_AT_ADDRESS(void  CEverQuest::doLoot(void),__do_loot);
+#endif
 #ifdef CEverQuest__SendLightInfo
 FUNCTION_AT_ADDRESS(void  CEverQuest::SendLightInfo(class EQPlayer *,unsigned char),CEverQuest__SendLightInfo);
 #endif
@@ -5869,7 +5904,7 @@ FUNCTION_AT_ADDRESS(void  CEverQuest::DeacSpellScreen(void),CEverQuest__DeacSpel
 //FUNCTION_AT_ADDRESS(enum ZONE_REQ_STATUS  CEverQuest::IsZoneAvailable(char *,enum EQZoneIndex,enum ZONE_REQ_REASON),CEverQuest__IsZoneAvailable);
 #endif
 #ifdef CEverQuest__MoveToZone
-//FUNCTION_AT_ADDRESS(void  CEverQuest::MoveToZone(enum EQZoneIndex,char *,int,enum ZONE_REQ_REASON),CEverQuest__MoveToZone);
+FUNCTION_AT_ADDRESS(void CEverQuest::MoveToZone(int EQZoneIndex,char *,int,int ZONE_REQ_REASON,float,float,float,int),CEverQuest__MoveToZone);
 #endif
 #ifdef CEverQuest__MoveToZone1
 //FUNCTION_AT_ADDRESS(void  CEverQuest::MoveToZone(char *,char *,int,enum ZONE_REQ_REASON),CEverQuest__MoveToZone1);
@@ -7051,7 +7086,7 @@ FUNCTION_AT_ADDRESS( CSidlScreenWnd::CSidlScreenWnd(class CXWnd *x,class CXStr),
 FUNCTION_AT_ADDRESS(void  CSidlScreenWnd::Init(class CXWnd *,unsigned __int32,class CXRect,class CXStr,int,char *),CSidlScreenWnd__Init);
 #endif
 #ifdef CSidlScreenWnd__Init1
-FUNCTION_AT_ADDRESS(void  CSidlScreenWnd::Init(class CXWnd *,class CXStr*,int,char *),CSidlScreenWnd__Init1);
+FUNCTION_AT_ADDRESS(void  CSidlScreenWnd::Init(int,class CXStr*,int,int,int),CSidlScreenWnd__Init1);
 #endif
 #ifdef CSidlScreenWnd__SetScreen
 FUNCTION_AT_ADDRESS(void  CSidlScreenWnd::SetScreen(class CXStr*),CSidlScreenWnd__SetScreen);
@@ -7095,9 +7130,9 @@ FUNCTION_AT_ADDRESS(void  CSidlScreenWnd::EnableIniStorage(int,char *),CSidlScre
 #ifdef CSidlScreenWnd__ConvertToRes
 FUNCTION_AT_ADDRESS(int  CSidlScreenWnd::ConvertToRes(int,int,int,int),CSidlScreenWnd__ConvertToRes);
 #endif
-//#ifdef CSidlScreenWnd__GetChildItem
-//FUNCTION_AT_ADDRESS(class CXWnd *  CSidlScreenWnd::GetChildItem(class CXStr&)const ,CSidlScreenWnd__GetChildItem);
-//#endif
+#ifdef CSidlScreenWnd__GetChildItem
+FUNCTION_AT_ADDRESS(class CXWnd *  CSidlScreenWnd::GetChildItem(CXStr const &),CSidlScreenWnd__GetChildItem);
+#endif
 #ifdef CSidlScreenWnd__LoadIniListWnd
 FUNCTION_AT_ADDRESS(void  CSidlScreenWnd::LoadIniListWnd(class CListWnd *,char *),CSidlScreenWnd__LoadIniListWnd);
 #endif
@@ -7276,7 +7311,7 @@ FUNCTION_AT_ADDRESS(class CXRect  CXWnd::GetScreenRect(void)const ,CXWnd__GetScr
 FUNCTION_AT_ADDRESS(int  CXWnd::Resize(int,int),CXWnd__Resize);
 #endif
 #ifdef CXWnd__GetChildItem
-FUNCTION_AT_ADDRESS(class CXWnd *  CXWnd::GetChildItem(class CXStr)const ,CXWnd__GetChildItem);
+FUNCTION_AT_ADDRESS(class CXWnd *  CXWnd::GetChildItem(CXStr const &),CXWnd__GetChildItem);
 #endif
 #ifdef CXWnd__SetZLayer
 FUNCTION_AT_ADDRESS(void  CXWnd::SetZLayer(int),CXWnd__SetZLayer);
@@ -7295,6 +7330,9 @@ FUNCTION_AT_ADDRESS(void  CXWnd::SetKeyTooltip(int,int),CXWnd__SetKeyTooltip);
 #endif
 #ifdef CXWnd__GetXMLTooltip
 FUNCTION_AT_ADDRESS(class CXStr  CXWnd::GetXMLTooltip(void)const ,CXWnd__GetXMLTooltip);
+#endif
+#ifdef CXWnd__DrawTooltip
+FUNCTION_AT_ADDRESS(int CXWnd::DrawTooltip(class CXWnd const *)const,CXWnd__DrawTooltip);
 #endif
 #ifdef CMutexSyncCounted__CMutexSyncCounted
 FUNCTION_AT_ADDRESS( CMutexSyncCounted::CMutexSyncCounted(void),CMutexSyncCounted__CMutexSyncCounted);
@@ -7471,7 +7509,7 @@ FUNCTION_AT_ADDRESS(int  CListWnd::GetCurCol(void)const ,CListWnd__GetCurCol);
 FUNCTION_AT_ADDRESS(unsigned __int32  CListWnd::GetItemData(int)const ,CListWnd__GetItemData);
 #endif
 #ifdef CListWnd__GetItemText
-FUNCTION_AT_ADDRESS(class CXStr  CListWnd::GetItemText(int,int)const ,CListWnd__GetItemText);
+FUNCTION_AT_ADDRESS(class CXStr *CListWnd::GetItemText(class CXStr *,int,int)const ,CListWnd__GetItemText);
 #endif
 #ifdef CListWnd__GetItemIcon
 FUNCTION_AT_ADDRESS(class CTextureAnimation const *  CListWnd::GetItemIcon(int,int)const ,CListWnd__GetItemIcon);
@@ -7516,7 +7554,7 @@ FUNCTION_AT_ADDRESS(class CTextureAnimation const *  CListWnd::GetColumnAnimatio
 FUNCTION_AT_ADDRESS(int  CListWnd::AddLine(class SListWndLine const *),CListWnd__AddLine);
 #endif
 #ifdef CListWnd__AddString
-FUNCTION_AT_ADDRESS(int  CListWnd::AddString(class CXStr *,unsigned long,unsigned __int32,class CTextureAnimation const *),CListWnd__AddString);
+FUNCTION_AT_ADDRESS(int  CListWnd::AddString(class CXStr *,unsigned long,unsigned __int32,class CTextureAnimation const *, const char *),CListWnd__AddString);
 #endif
 #ifdef CListWnd__RemoveString
 FUNCTION_AT_ADDRESS(void  CListWnd::RemoveString(int),CListWnd__RemoveString);
@@ -7543,7 +7581,7 @@ FUNCTION_AT_ADDRESS(void  CListWnd::ClearSel(int),CListWnd__ClearSel);
 FUNCTION_AT_ADDRESS(void  CListWnd::SetItemData(int,unsigned __int32),CListWnd__SetItemData);
 #endif
 #ifdef CListWnd__SetItemText
-FUNCTION_AT_ADDRESS(void  CListWnd::SetItemText(int,int,class CXStr),CListWnd__SetItemText);
+FUNCTION_AT_ADDRESS(void  CListWnd::SetItemText(int,int,class CXStr *),CListWnd__SetItemText);
 #endif
 #ifdef CListWnd__SetItemColor
 FUNCTION_AT_ADDRESS(void  CListWnd::SetItemColor(int,int,unsigned long),CListWnd__SetItemColor);
@@ -7876,7 +7914,7 @@ FUNCTION_AT_ADDRESS(bool __cdecl CStmlWnd::CanBreakAtCharacter(unsigned short),C
 FUNCTION_AT_ADDRESS(void  CStmlWnd::UpdateHistoryString(__int32,class CXStr&),CStmlWnd__UpdateHistoryString);
 #endif
 #ifdef CStmlWnd__SetSTMLText
-//FUNCTION_AT_ADDRESS(void  CStmlWnd::SetSTMLText(class CXStr,bool,class SLinkInfo *),CStmlWnd__SetSTMLText);
+FUNCTION_AT_ADDRESS(void  CStmlWnd::SetSTMLText(class CXStr &,bool,class SLinkInfo *),CStmlWnd__SetSTMLText);
 #endif
 #ifdef SLinkInfo__SLinkInfo1
 //FUNCTION_AT_ADDRESS( SLinkInfo::SLinkInfo(void),SLinkInfo__SLinkInfo1);
@@ -8293,7 +8331,7 @@ FUNCTION_AT_ADDRESS(class CXRect  CComboWnd::GetListRect(void)const ,CComboWnd__
 FUNCTION_AT_ADDRESS(void  CComboWnd::SetColors(unsigned long,unsigned long,unsigned long),CComboWnd__SetColors);
 #endif
 #ifdef CComboWnd__InsertChoice
-FUNCTION_AT_ADDRESS(void  CComboWnd::InsertChoice(class CXStr *),CComboWnd__InsertChoice);
+FUNCTION_AT_ADDRESS(void  CComboWnd::InsertChoice(class CXStr *, unsigned long),CComboWnd__InsertChoice);
 #endif
 #ifdef CComboWnd__SetChoice
 FUNCTION_AT_ADDRESS(void  CComboWnd::SetChoice(int),CComboWnd__SetChoice);
@@ -8882,6 +8920,9 @@ FUNCTION_AT_ADDRESS( CInvSlotWnd::CInvSlotWnd(class CXWnd *,unsigned __int32,cla
 #endif
 #ifdef CInvSlotWnd__SetInvSlot
 FUNCTION_AT_ADDRESS(void  CInvSlotWnd::SetInvSlot(class CInvSlot *),CInvSlotWnd__SetInvSlot);
+#endif
+#ifdef CInvSlotWnd__DrawTooltip
+FUNCTION_AT_ADDRESS(int CInvSlotWnd::DrawTooltip(class CXWnd const *)const,CInvSlotWnd__DrawTooltip);
 #endif
 #ifdef CLabel__CLabel
 FUNCTION_AT_ADDRESS( CLabel::CLabel(class CXWnd *,unsigned __int32,class CXRect,int),CLabel__CLabel);
@@ -9502,3 +9543,39 @@ FUNCTION_AT_ADDRESS(void CTextOverlay::DisplayText(char *,int,int,int,int,int,in
 // GetString(index, subindex, &success)
 FUNCTION_AT_ADDRESS(char *CDBStr::GetString(int, int, int *), CDBStr__GetString);
 #endif
+#ifdef EQMisc__GetActiveFavorCost
+FUNCTION_AT_ADDRESS(int EQMisc::GetActiveFavorCost(void),EQMisc__GetActiveFavorCost);
+#endif
+#ifdef CSkillMgr__GetStrNumber
+FUNCTION_AT_ADDRESS(unsigned long CSkillMgr::GetStrNumber(int),CSkillMgr__GetStrNumber);
+#endif
+#ifdef CSkillMgr__GetSkillCap
+FUNCTION_AT_ADDRESS(unsigned long CSkillMgr::GetSkillCap(class EQ_Character *,int,int,int,bool,bool,bool),CSkillMgr__GetSkillCap)
+#endif
+#ifdef CSkillMgr__SkillAvailableAtLevel
+FUNCTION_AT_ADDRESS(unsigned long CSkillMgr::SkillAvailableAtLevel(int,int),CSkillMgr__SkillAvailableAtLevel);
+#endif
+#ifdef CSkillMgr__IsActivatableSkill
+FUNCTION_AT_ADDRESS(bool CSkillMgr::IsActivatableSkill(int),CSkillMgr__IsActivatableSkill);
+#endif
+#ifdef CSkillMgr__GetBaseDamage
+FUNCTION_AT_ADDRESS(unsigned long CSkillMgr::GetBaseDamage(int),CSkillMgr__GetBaseDamage);
+#endif
+#ifdef CSkillMgr__GetReuseTime
+FUNCTION_AT_ADDRESS(unsigned long CSkillMgr::GetReuseTime(int),CSkillMgr__GetReuseTime);
+#endif
+#ifdef CChatService__GetNumberOfFriends
+FUNCTION_AT_ADDRESS(int CChatService::GetNumberOfFriends(void),CChatService__GetNumberOfFriends);
+#endif
+#ifdef CChatService__GetFriendName
+FUNCTION_AT_ADDRESS(char *CChatService::GetFriendName(int),CChatService__GetFriendName);
+#endif
+#ifdef OtherCharData__GetAltCurrency
+FUNCTION_AT_ADDRESS(unsigned long OtherCharData::GetAltCurrency(unsigned long,unsigned long),OtherCharData__GetAltCurrency);
+#endif
+
+void bogus()
+{
+EQ_Character1 *crap = NULL;
+crap->UseSkill(0, NULL);
+}

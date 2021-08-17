@@ -27,6 +27,11 @@
 VOID CheckChatForEvent(PCHAR szMsg)
 {
 	IS_CheckTriggers(pExtension,pISInterface,hTriggerService,szMsg);
+	char *argv[]=
+	{
+		szMsg
+	};
+	pISInterface->ExecuteEvent(ChatEventID,0,1,argv);
 }
 
 unsigned long ParseSearchSpawnArg(int arg, int argc, char *argv[], SEARCHSPAWN &SearchSpawn)
@@ -89,6 +94,8 @@ unsigned long ParseSearchSpawnArg(int arg, int argc, char *argv[], SEARCHSPAWN &
 			SearchSpawn.bDps = TRUE;
 		} else if (!stricmp(argv[arg],"slower")) {
 			SearchSpawn.bSlower = TRUE;
+                } else if (!stricmp(argv[arg],"los")) { 
+                        SearchSpawn.bLoS = TRUE; 
         } else if (!stricmp(argv[arg],"range")) {
 			if (arg+2<argc)
 			{
@@ -99,8 +106,9 @@ unsigned long ParseSearchSpawnArg(int arg, int argc, char *argv[], SEARCHSPAWN &
         } else if (!stricmp(argv[arg],"loc")) {
 			if (arg+2<argc)
 			{
-	            SearchSpawn.xLoc = (FLOAT)atof(argv[arg+1]);
-	            SearchSpawn.yLoc = (FLOAT)atof(argv[arg+2]);
+				SearchSpawn.bKnownLocation = TRUE;
+				SearchSpawn.xLoc = (FLOAT)atof(argv[arg+1]);
+				SearchSpawn.yLoc = (FLOAT)atof(argv[arg+2]);
 			}
 			ExtraUsed=2;
         } else if (!stricmp(argv[arg],"id")) {

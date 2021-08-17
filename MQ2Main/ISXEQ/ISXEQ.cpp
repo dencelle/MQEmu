@@ -39,17 +39,22 @@ HISXSERVICE hUIService;
 HISXSERVICE hGamestateService;
 HISXSERVICE hSpawnService;
 HISXSERVICE hZoneService;
+unsigned int ChatEventID=0;
+unsigned int PersistentPointerClass=0;
 
 // Forward declarations of callbacks
-void __cdecl PulseService(bool Broadcast, unsigned long MSG, void *lpData);
-void __cdecl MemoryService(bool Broadcast, unsigned long MSG, void *lpData);
-void __cdecl HTTPService(bool Broadcast, unsigned long MSG, void *lpData);
-void __cdecl TriggerService(bool Broadcast, unsigned long MSG, void *lpData);
-void __cdecl ProtectionRequest(ISXInterface *pClient, unsigned long MSG, void *lpData);
+void __cdecl PulseService(bool Broadcast, unsigned int MSG, void *lpData);
+void __cdecl MemoryService(bool Broadcast, unsigned int MSG, void *lpData);
+void __cdecl HTTPService(bool Broadcast, unsigned int MSG, void *lpData);
+void __cdecl TriggerService(bool Broadcast, unsigned int MSG, void *lpData);
+void __cdecl ProtectionRequest(ISXInterface *pClient, unsigned int MSG, void *lpData);
 
-void __cdecl SoftwareCursorService(bool Broadcast, unsigned long MSG, void *lpData);
+#if 0
+void __cdecl SoftwareCursorService(bool Broadcast, unsigned int MSG, void *lpData);
 
 HISXSERVICE hSoftwareCursorService=0;
+#endif
+
 HISXSERVICE hEQProtectionService=0;
 
 
@@ -73,6 +78,19 @@ extern void MQ2Shutdown();
 bool CISXEQ::Initialize(ISInterface *p_ISInterface)
 {
 	pISInterface=p_ISInterface;
+	
+	char CurrentModule[512]={0};
+	GetModuleFileName(0,CurrentModule,512);
+	char *filename;
+	if (filename=strrchr(CurrentModule,'\\'))
+		filename++;
+	else
+		filename=CurrentModule;
+	if (stricmp(filename,"eqgame.exe"))
+	{
+		printf("ISXEQ is only meant to be used in eqgame.exe");
+		return false;
+	}
 
 	// retrieve basic ISData types
 	pStringType=pISInterface->FindLSType("string");
@@ -115,7 +133,7 @@ void CISXEQ::Shutdown()
 	UnRegisterCommands();
 }
 
-
+#if 0
 class EQSoftwareCursorInterface : public ISXSoftwareCursorInterface
 {
 public:
@@ -141,11 +159,12 @@ public:
 	{
 		if (bMouseLook)
 			return false;
-		pWndMgr->DrawCursor();
+//		pWndMgr->DrawCursor();
 		//pWndMgr->DrawCursor()
 		return true;
 	}
 } SoftwareCursorInterface;
+#endif
 
 void CISXEQ::ConnectServices()
 {
@@ -156,9 +175,12 @@ void CISXEQ::ConnectServices()
 	hMemoryService=pISInterface->ConnectService(this,"Memory",MemoryService);
 	hHTTPService=pISInterface->ConnectService(this,"HTTP",HTTPService);
 	hTriggerService=pISInterface->ConnectService(this,"Triggers",TriggerService);
+
+#if 0
 	hSoftwareCursorService=pISInterface->ConnectService(this,"Software Cursor",SoftwareCursorService);
 
 	IS_SoftwareCursorEnable(this,pISInterface,hSoftwareCursorService,&SoftwareCursorInterface);
+#endif
 }
 void CISXEQ::RegisterCommands()
 {
@@ -177,7 +199,7 @@ void CISXEQ::RegisterDataTypes()
 	// pMyType = new MyType;
 	// pISInterface->AddLSType(*pMyType);
 
-#define DATATYPE(_class_,_variable_) _variable_ = new _class_; pISInterface->AddLSType(*_variable_);
+#define DATATYPE(_class_,_variable_,_persistentclass_) _variable_ = new _class_; pISInterface->AddLSType(*_variable_); if (_persistentclass_) pISInterface->SetPersistentClass(_variable_,pISInterface->RegisterPersistentClass(_persistentclass_));
 #include "ISXEQDataTypes.h"
 #undef DATATYPE
 	pGroupMemberType->SetInheritance(pSpawnType);
@@ -198,8 +220,8 @@ void CISXEQ::RegisterTopLevelObjects()
 #undef TOPLEVELOBJECT
 }
 
-extern void __cdecl GamestateRequest(ISXInterface *pClient, unsigned long MSG, void *lpData);
-extern void __cdecl SpawnRequest(ISXInterface *pClient, unsigned long MSG, void *lpData);
+extern void __cdecl GamestateRequest(ISXInterface *pClient, unsigned int MSG, void *lpData);
+extern void __cdecl SpawnRequest(ISXInterface *pClient, unsigned int MSG, void *lpData);
 
 void CISXEQ::RegisterServices()
 {
@@ -212,6 +234,8 @@ void CISXEQ::RegisterServices()
 	hSpawnService=pISInterface->RegisterService(this,"EQ Spawn Service",SpawnRequest);
 	hZoneService=pISInterface->RegisterService(this,"EQ Zone Service",0);
 
+	ChatEventID = pISInterface->RegisterEvent("EQ Chat");
+	PersistentPointerClass = pISInterface->RegisterPersistentClass("EQ Objects");
 }
 
 void CISXEQ::DisconnectServices()
@@ -235,11 +259,14 @@ void CISXEQ::DisconnectServices()
 	{
 		pISInterface->DisconnectService(this,hTriggerService);
 	}
-
+#if 0
 	if (hSoftwareCursorService)
 	{
+		IS_SoftwareCursorDisable(this,pISInterface,hSoftwareCursorService);
 		pISInterface->DisconnectService(this,hSoftwareCursorService);
 	}
+#endif
+	pISInterface->InvalidatePersistentClass(PersistentPointerClass);
 }
 
 void CISXEQ::UnRegisterCommands()
@@ -254,7 +281,7 @@ void CISXEQ::UnRegisterAliases()
 void CISXEQ::UnRegisterDataTypes()
 {
 	// remove data types
-#define DATATYPE(_class_,_variable_)  if (_variable_) {pISInterface->RemoveLSType(*_variable_);delete _variable_;}
+#define DATATYPE(_class_,_variable_,_persistentclass_)  if (_variable_) {pISInterface->RemoveLSType(*_variable_);delete _variable_; }
 #include "ISXEQDataTypes.h"
 #undef DATATYPE
 
@@ -287,36 +314,31 @@ void CISXEQ::UnRegisterServices()
 		pISInterface->ShutdownService(this,hZoneService);
 }
 
-bool CISXEQ::Protect(unsigned long Address, unsigned long Size)
+bool CISXEQ::Protect(unsigned int Address, unsigned int Size, const void *OriginalData)
 {
-   for (unsigned long i = 0 ; i < ProtectedList.Size ; i++)
-   if (EQProtected *pProtected=ProtectedList[i])
-   {
-      if (pProtected->Address==Address)
-      {
-         return false; // conflict
-      }
-   }
+	EQProtected *pProtected=ProtectedMap[Address];
+	if (pProtected)
+		return false;
 
-   // assumed to be safe
-   EQProtected *pProtected = new EQProtected(Address,Size);
-   ProtectedList+=pProtected;
+	if (IsBadReadPtr((void*)Address,Size))
+		return false;
+
+   pProtected = new EQProtected(Address,Size,OriginalData);
+   ProtectedMap[Address]=pProtected;
    return true; 
 }
 
-bool CISXEQ::UnProtect(unsigned long Address)
+bool CISXEQ::UnProtect(unsigned int Address)
 {
-   for (unsigned long i = 0 ; i < ProtectedList.Size ; i++)
-   if (EQProtected *pProtected=ProtectedList[i])
-   {
-      if (pProtected->Address==Address)
-      {
-         delete pProtected;
-         ProtectedList[i]=0;
-         return true;
-      }
-   }
-   return false; 
+		map<unsigned int,EQProtected*>::iterator i=ProtectedMap.find(Address);
+		if (i==ProtectedMap.end())
+			return false;
+		EQProtected *pProtected=i->second;
+		if (!pProtected)
+			return false;
+		delete pProtected;
+		ProtectedMap.erase(Address);
+		return true;
 }
 
 extern int __cdecl memcheck0(unsigned char *buffer, int count);
@@ -324,7 +346,6 @@ extern int __cdecl memcheck1(unsigned char *buffer, int count, struct mckey key)
 extern int __cdecl memcheck2(unsigned char *buffer, int count, struct mckey key);
 extern int __cdecl memcheck3(unsigned char *buffer, int count, struct mckey key);
 extern int __cdecl memcheck4(unsigned char *buffer, int count, struct mckey key);
-extern VOID memchecks_tramp(PVOID,DWORD,PCHAR,DWORD,BOOL);
 
 // this is the memory checker key struct
 struct mckey {
@@ -334,13 +355,28 @@ struct mckey {
         char sa[4];
     };
 };
+
+class CObfuscator 
+{
+public:
+    int doit_tramp(int, int); 
+    int doit_detour(int opcode, int flag);
+};
+
+class CEmoteHook 
+{ 
+public: 
+    VOID Trampoline(void);
+    VOID Detour(void);
+};
+
 DETOUR_TRAMPOLINE_EMPTY(int __cdecl memcheck0_tramp(unsigned char *buffer, int count));
 DETOUR_TRAMPOLINE_EMPTY(int __cdecl memcheck1_tramp(unsigned char *buffer, int count, struct mckey key));
 DETOUR_TRAMPOLINE_EMPTY(int __cdecl memcheck2_tramp(unsigned char *buffer, int count, struct mckey key));
 DETOUR_TRAMPOLINE_EMPTY(int __cdecl memcheck3_tramp(unsigned char *buffer, int count, struct mckey key));
 DETOUR_TRAMPOLINE_EMPTY(int __cdecl memcheck4_tramp(unsigned char *buffer, int count, struct mckey key));
 
-
+extern VOID HookInlineChecks(BOOL Patch);
 
 VOID CISXEQ::HookMemChecker(BOOL Patch)
 {
@@ -362,40 +398,48 @@ VOID CISXEQ::HookMemChecker(BOOL Patch)
 		{
 			printf("memcheck4 detour failed");
 		}
-		if (!EzDetour(__SendMessage,memchecks,memchecks_tramp))
+                if (!EzDetour(CEverQuest__Emote,&CEmoteHook::Detour,&CEmoteHook::Trampoline))
 		{
-			printf("memchecks detour failed");
+			printf("emote detour failed");
 		}
+		if (!EzDetour(CObfuscator__doit,&CObfuscator::doit_detour,&CObfuscator::doit_tramp))
+		{
+			printf("CObfuscator::doit detour failed");
+		}
+		HookInlineChecks(Patch);
     } else {
+		HookInlineChecks(Patch);
 		EzUnDetour(__MemChecker0);
 		EzUnDetour(__MemChecker2);
 		EzUnDetour(__MemChecker3);
 		EzUnDetour(__MemChecker4);
-		EzUnDetour(__SendMessage);
+		EzUnDetour(CObfuscator__doit);
+		EzUnDetour(CEverQuest__Emote);
     }
 }
 
-extern void Heartbeat();
-void __cdecl PulseService(bool Broadcast, unsigned long MSG, void *lpData)
+//extern void Heartbeat();
+void __cdecl PulseService(bool Broadcast, unsigned int MSG, void *lpData)
 {
 	if (MSG==PULSE_PREFRAME)
 	{
 		// "OnPulse"
-		Heartbeat();
+		// Heartbeat is moved back into ProcessGameEvents, where MQ2's heartbeat is
+//		Heartbeat();
 	}
 }
 
-void __cdecl MemoryService(bool Broadcast, unsigned long MSG, void *lpData)
+void __cdecl MemoryService(bool Broadcast, unsigned int MSG, void *lpData)
 {
 	// no messages are currently associated with this service (other than
 	// system messages such as client disconnect), so do nothing.
 }
-void __cdecl TriggerService(bool Broadcast, unsigned long MSG, void *lpData)
+void __cdecl TriggerService(bool Broadcast, unsigned int MSG, void *lpData)
 {
 	// no messages are currently associated with this service (other than
 	// system messages such as client disconnect), so do nothing.
 }
-void __cdecl HTTPService(bool Broadcast, unsigned long MSG, void *lpData)
+void __cdecl HTTPService(bool Broadcast, unsigned int MSG, void *lpData)
 {
 	switch(MSG)
 	{
@@ -413,23 +457,60 @@ void __cdecl HTTPService(bool Broadcast, unsigned long MSG, void *lpData)
 	}
 }
 
-void __cdecl ProtectionRequest(ISXInterface *pClient, unsigned long MSG, void *lpData)
+void __cdecl ProtectionRequest(ISXInterface *pClient, unsigned int MSG, void *lpData)
 {
    switch(MSG)
    {
    case MEMPROTECT_PROTECT:
 #define pData ((MemProtect*)lpData)
-	   pData->Success=pExtension->Protect(pData->Address,pData->Length);
+	   pData->Success=pExtension->Protect(pData->Address,pData->Length,pData->OriginalData);
 //	   printf("Protection: %X for %d length, success=%d",pData->Address,pData->Length,pData->Success);
 #undef pData
 	   break;
    case MEMPROTECT_UNPROTECT:
-		pExtension->UnProtect((unsigned long)lpData);
+		pExtension->UnProtect((unsigned int)lpData);
 	   break;
    }
 }
 
-void __cdecl SoftwareCursorService(bool Broadcast, unsigned long MSG, void *lpData)
+#if 0
+void __cdecl SoftwareCursorService(bool Broadcast, unsigned int MSG, void *lpData)
 {
 	// receives nothing
 }
+#endif
+
+bool CISXEQ::Memcpy_Clean(unsigned int BeginAddress, unsigned char *buf, unsigned int buflen)
+{
+	memcpy(buf,(void*)BeginAddress,buflen);
+
+	unsigned int EndAddress=BeginAddress+buflen;
+	for (map<unsigned int,EQProtected*>::iterator i = ProtectedMap.begin() ; i!=ProtectedMap.end() ; i++)
+	{
+		if (EQProtected *pProt=i->second)
+		{
+
+		// find leftmost end
+		unsigned int RangeEnd=pProt->EndAddress;
+		if (RangeEnd>EndAddress)
+			RangeEnd=EndAddress;
+		
+		// find rightmost beginning
+		unsigned int RangeBegin=pProt->Address;
+		if (RangeBegin<BeginAddress)
+			RangeBegin=BeginAddress;
+
+		int Length=RangeEnd-RangeBegin;
+		if (Length<=0)
+			continue;
+
+		unsigned int ProtOffset = RangeBegin-pProt->Address;
+		unsigned int BufOffset = RangeBegin-BeginAddress;
+		unsigned int Range = RangeEnd-RangeBegin;
+		memcpy(&buf[BufOffset],&pProt->Array[ProtOffset],Range);
+		}
+	}		
+	return true;
+}
+
+

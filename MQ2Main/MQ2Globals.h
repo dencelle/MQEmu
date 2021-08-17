@@ -35,12 +35,13 @@ EQLIB_API DWORD bmEndZone;
 /* OTHER */
 
 #ifndef ISXEQ
-EQLIB_VAR PDATAVAR pGlobalVariables;
-EQLIB_VAR PDATAVAR pMacroVariables;
+LEGACY_VAR PDATAVAR pGlobalVariables;
+LEGACY_VAR PDATAVAR pMacroVariables;
 #endif
 
 EQLIB_VAR BOOL bAllErrorsFatal;
 EQLIB_VAR BOOL bAllErrorsDumpStack;
+EQLIB_VAR BOOL bAllErrorsLog;
 EQLIB_API CHAR DataTypeTemp[MAX_STRING];
 
 EQLIB_API CHAR gszVersion[32];
@@ -63,11 +64,11 @@ EQLIB_VAR BOOL gbEQWLoaded;
 EQLIB_VAR BOOL gbUnload;
 EQLIB_VAR DWORD gpHook;
 #ifndef ISXEQ
-EQLIB_VAR PMACROBLOCK gMacroBlock;
-EQLIB_VAR PMACROSTACK gMacroStack;
-EQLIB_VAR map<string,PMACROBLOCK> gMacroSubLookupMap; 
-EQLIB_VAR PEVENTQUEUE gEventQueue;
-EQLIB_VAR PMACROBLOCK gEventFunc[NUM_EVENTS];
+LEGACY_VAR PMACROBLOCK gMacroBlock;
+LEGACY_VAR PMACROSTACK gMacroStack;
+LEGACY_VAR map<string,PMACROBLOCK> gMacroSubLookupMap; 
+LEGACY_VAR PEVENTQUEUE gEventQueue;
+LEGACY_VAR PMACROBLOCK gEventFunc[NUM_EVENTS];
 #endif
 EQLIB_VAR UCHAR gLastFind;
 EQLIB_VAR BOOL gInClick;
@@ -89,7 +90,7 @@ EQLIB_VAR CHAR gszLastMQ2DataError[MAX_STRING];
 
 EQLIB_VAR PSPAWNINFO pNamingSpawn;
 EQLIB_VAR CHAR gszSpawnNPCName[MAX_STRING];
-EQLIB_VAR CHAR gszSpawnPlayerName[5][MAX_STRING];
+EQLIB_VAR CHAR gszSpawnPlayerName[7][MAX_STRING];
 EQLIB_VAR CHAR gszSpawnPetName[MAX_STRING];
 EQLIB_VAR CHAR gszSpawnCorpseName[MAX_STRING];
 
@@ -99,9 +100,11 @@ EQLIB_VAR DWORD gEventChat;
 EQLIB_VAR DWORD gRunning;
 EQLIB_VAR BOOL gbMoving;
 EQLIB_VAR DWORD gMaxTurbo;
+EQLIB_VAR BOOL gReturn;
 
 EQLIB_VAR PCHATBUF gDelayedCommands;
 
+EQLIB_VAR BOOL gbInZone;
 EQLIB_VAR BOOL gZoning;
 EQLIB_VAR BOOL WereWeZoning;
 EQLIB_VAR BOOL gbInDInput;
@@ -123,6 +126,7 @@ EQLIB_VAR BOOL gSpewToFile;
 EQLIB_VAR BOOL gbDoAutoRun;
 EQLIB_VAR BOOL gMQPauseOnChat;
 EQLIB_VAR BOOL gKeepKeys;
+EQLIB_VAR BOOL gLClickedObject;
 EQLIB_VAR SWHOFILTER gFilterSWho;
 
 EQLIB_VAR BOOL gbHUDUnderUI;
@@ -132,15 +136,15 @@ EQLIB_VAR BOOL gFilterMQ2DataErrors;
 
 EQLIB_VAR DOUBLE DegToRad;
 EQLIB_VAR DOUBLE PI;
-#define ZoneShift			 0
+#define ZoneShift             0
 
 #ifndef ISXEQ
-EQLIB_VAR Blech *pMQ2Blech;
-EQLIB_VAR CHAR EventMsg[MAX_STRING];
+LEGACY_VAR Blech *pMQ2Blech;
+LEGACY_VAR CHAR EventMsg[MAX_STRING];
 #ifdef USEBLECHEVENTS
-EQLIB_VAR Blech *pEventBlech;
+LEGACY_VAR Blech *pEventBlech;
 #endif
-EQLIB_VAR PEVENTLIST pEventList;
+LEGACY_VAR PEVENTLIST pEventList;
 #endif
 
 //EQLIB_VAR PKEYPRESS gKeyStack;
@@ -150,7 +154,6 @@ EQLIB_VAR CHAR gDelayCondition[MAX_STRING];
 EQLIB_VAR PALERTLIST gpAlertList;
 EQLIB_VAR BOOL gMacroPause;
 EQLIB_VAR SPAWNINFO EnviroTarget;
-EQLIB_VAR ACTORINFO EnviroActor;
 EQLIB_VAR PGROUNDITEM pGroundTarget;
 EQLIB_VAR SPAWNINFO DoorEnviroTarget;
 EQLIB_VAR PDOOR pDoorTarget;
@@ -178,11 +181,13 @@ EQLIB_VAR DWORD HealthGained;
 EQLIB_VAR DWORD EnduranceGained;
 
 EQLIB_VAR DWORD gGameState;
-
+EQLIB_VAR BOOL gbMQ2LoadingMsg;
+EQLIB_VAR BOOL gbExactSearchCleanNames;
 
 EQLIB_VAR DWORD EQADDR_CONVERTITEMTAGS;
 
 EQLIB_VAR DWORD EQADDR_MEMCHECK0;
+EQLIB_VAR DWORD EQADDR_MEMCHECK1;
 EQLIB_VAR DWORD EQADDR_MEMCHECK2;
 EQLIB_VAR DWORD EQADDR_MEMCHECK3;
 EQLIB_VAR DWORD EQADDR_MEMCHECK4;
@@ -190,10 +195,8 @@ EQLIB_VAR PCHAR EQADDR_SERVERHOST;
 EQLIB_VAR PCHAR EQADDR_SERVERNAME;
 EQLIB_VAR DWORD EQADDR_HWND;
 
-EQLIB_VAR PSKILL *SkillDict;
-
-EQLIB_VAR PEQFRIENDSLIST pFriendsList;
-EQLIB_VAR PEQFRIENDSLIST pIgnoreList;
+EQLIB_VAR _SKILLMGR **ppSkillMgr;
+#define pSkillMgr (*ppSkillMgr)
 
 EQLIB_VAR PCMDLIST EQADDR_CMDLIST;
 
@@ -207,6 +210,7 @@ EQLIB_VAR PBYTE EQADDR_DOABILITYAVAILABLE;
 EQLIB_VAR PBYTE pTributeActive;
 
 EQLIB_VAR PBYTE EQADDR_ENCRYPTPAD0;
+EQLIB_VAR PBYTE EQADDR_ENCRYPTPAD1;
 EQLIB_VAR PBYTE EQADDR_ENCRYPTPAD2;
 EQLIB_VAR PBYTE EQADDR_ENCRYPTPAD3;
 EQLIB_VAR PBYTE EQADDR_ENCRYPTPAD4;
@@ -227,7 +231,12 @@ EQLIB_VAR DWORD *gpShowNames;
 #define gShowNames (*gpShowNames)
 EQLIB_VAR DWORD *gpPCNames;
 #define gPCNames (*gpPCNames)
-
+EQLIB_VAR PBYTE gpAutoFire;
+#define gAutoFire (*gpAutoFire)
+EQLIB_VAR PBYTE gpShiftKeyDown;
+#define gShiftKeyDown (*gpShiftKeyDown)
+EQLIB_VAR DWORD *gpMouseEventTime;
+#define gMouseEventTime (*gpMouseEventTime)
 
 EQLIB_VAR DWORD *g_ppDrawHandler;
 #define g_pDrawHandler (*g_ppDrawHandler)
@@ -243,8 +252,7 @@ EQLIB_VAR IDirectInputDevice8A **EQADDR_DIMOUSE;
 
 EQLIB_VAR DWORD EQADDR_EQLABELS;
 
-EQLIB_VAR BOOL gMouseLeftClickInProgress;
-EQLIB_VAR BOOL gMouseRightClickInProgress;
+EQLIB_VAR BOOL gMouseClickInProgress[8];
 EQLIB_VAR BOOL bDetMouse;
 
 // ***************************************************************************
@@ -285,12 +293,12 @@ EQLIB_VAR fEQCommand         cmdCast;
 
 EQLIB_VAR fEQNewUIINI        NewUIINI;
 EQLIB_VAR fEQProcGameEvts    ProcessGameEvents;
-EQLIB_VAR fEQSendMessage     send_message;
-EQLIB_VAR fEQExecuteCmd		 ExecuteCmd;
+EQLIB_VAR fEQExecuteCmd         ExecuteCmd;
 EQLIB_VAR fEQGetMelee    get_melee_range;
 
 EQLIB_VAR PCHAR szItemName[];
 EQLIB_VAR PCHAR szItemName4xx[];
+EQLIB_VAR ACTORDEFENTRY ActorDefList[];
 //EQLIB_VAR PCHAR szTheme[]; 
 EQLIB_VAR PCHAR szDmgBonusType[];
 EQLIB_VAR PCHAR szBodyType[];
@@ -322,7 +330,7 @@ EQLIB_VAR PMQXMLFILE pXMLFiles;
 EQLIB_VAR fGetLabelFromEQ GetLabelFromEQ;
 
 EQLIB_VAR map<string,PSPAWNINFO> SpawnByName;
-EQLIB_VAR EQPlayer **ppEQP_IDArray;
+//EQLIB_VAR EQPlayer **ppEQP_IDArray;
 EQLIB_VAR MQRANK EQP_DistArray[3000];
 EQLIB_VAR DWORD gSpawnCount;
 //#define ppEQP_IDArray (*pppEQP_IDArray)
@@ -332,6 +340,10 @@ EQLIB_VAR StringTable **ppStringTable;
 
 EQLIB_VAR CDBStr **ppCDBStr;
 #define pCDBStr (*ppCDBStr)
+EQLIB_VAR EQMisc *pEQMisc;
+EQLIB_VAR CSkillMgr **ppCSkillMgr;
+#define pCSkillMgr (*ppCSkillMgr)
+EQLIB_VAR CGuild *pGuild;
 
 EQLIB_VAR CEverQuest **ppEverQuest;
 #define pEverQuest (*ppEverQuest)
@@ -341,13 +353,16 @@ EQLIB_VAR EQ_PC **ppPCData;
 #define pPCData (*ppPCData)
 EQLIB_VAR EQ_Character **ppCharData;
 #define pCharData (*ppCharData)
-#define pCharData1 ((EQ_Character1 *)(((char *)(*ppCharData))+0xc280))
+#define pCharData1 ((EQ_Character1 *)&GetCharInfo()->vtable2)
 EQLIB_VAR EQPlayer **ppCharSpawn;
 #define pCharSpawn (*ppCharSpawn)
 EQLIB_VAR EQPlayer **ppActiveMerchant;
 #define pActiveMerchant (*ppActiveMerchant)
-EQLIB_VAR EQPlayer **ppSpawnList;
-#define pSpawnList (*ppSpawnList)
+EQLIB_VAR EQPlayerManager **ppSpawnManager;
+#define pSpawnManager (*ppSpawnManager)
+#define pSpawnList (((struct _SPAWNMANAGER *)pSpawnManager)->FirstSpawn)
+#define pChatService ((CChatService*)((PEVERQUEST)pEverQuest)->ChatService)
+#define pOtherCharData ((OtherCharData*)&GetCharInfo()->OtherCharData)
 
 EQLIB_VAR EQPlayer **ppLocalPlayer;
 #define pLocalPlayer (*ppLocalPlayer)
@@ -360,9 +375,6 @@ EQLIB_VAR EQWorldData **ppWorldData;
 #define pWorldData (*ppWorldData)
 EQLIB_VAR SpellManager **ppSpellMgr;
 #define pSpellMgr (*ppSpellMgr)
-EQLIB_VAR CInvSlot **ppSelectedItem;
-#define pSelectedItem (*ppSelectedItem)
-EQLIB_VAR EQGROUP *pGroup;
 EQLIB_VAR EQPlayer **ppTarget;
 #define pTarget (*ppTarget)
 EQLIB_VAR EqSwitchManager **ppSwitchMgr;
@@ -395,6 +407,10 @@ EQLIB_VAR KeypressHandler **ppKeypressHandler;
 #define pKeypressHandler (*ppKeypressHandler)
 
 EQLIB_VAR PEQRAID pRaid;
+EQLIB_VAR DZMEMBER **ppDZMember;
+EQLIB_VAR TASKMEMBER **ppTaskMember;
+EQLIB_VAR DZTIMERINFO **ppDZTimerInfo;
+EQLIB_VAR DYNAMICZONE *pDynamicZone;
 
 EQLIB_VAR PINT pgCurrentSocial;
 #define gCurrentSocial (*pgCurrentSocial)
@@ -403,6 +419,10 @@ EQLIB_VAR DWORD *pScreenX;
 #define ScreenX (*pScreenX)
 EQLIB_VAR DWORD *pScreenY;
 #define ScreenY (*pScreenY)
+EQLIB_VAR DWORD *pScreenXMax;
+#define ScreenXMax (*pScreenXMax)
+EQLIB_VAR DWORD *pScreenYMax;
+#define ScreenYMax (*pScreenYMax)
 EQLIB_VAR DWORD *pScreenMode;
 #define ScreenMode (*pScreenMode)
 EQLIB_VAR CHAR  *pMouseLook;
@@ -411,6 +431,17 @@ EQLIB_VAR CHAR  *pMouseLook;
 EQLIB_VAR SPELLFAVORITE *pSpellSets;
 EQLIB_VAR AltAdvManager** ppAltAdvManager;
 #define pAltAdvManager (*ppAltAdvManager)
+
+EQLIB_VAR PCONNECTION_T *ppConnection;
+#define pConnection (*ppConnection)
+EQLIB_VAR AURAMGR **ppAuraMgr;
+#define pAuraMgr (*ppAuraMgr)
+
+EQLIB_VAR EQCHATMGR **ppEQChatMgr;
+#define pChatMgr (*ppEQChatMgr)
+
+EQLIB_VAR MERCENARYINFO **ppMercInfo;
+#define pMercInfo (*ppMercInfo)
 
 /* WINDOW INSTANCES */ 
 EQLIB_VAR CContextMenuManager **ppContextMenuManager;
@@ -448,8 +479,8 @@ EQLIB_VAR CMapToolbarWnd **ppMapToolbarWnd;
 EQLIB_VAR CMapViewWnd **ppMapViewWnd;
 EQLIB_VAR CEditLabelWnd **ppEditLabelWnd;
 EQLIB_VAR COptionsWnd **ppOptionsWnd;
-EQLIB_VAR CBuffWindow **ppBuffWindow;
-EQLIB_VAR CBuffWindow **ppBuffWindow;
+EQLIB_VAR CBuffWindow **ppBuffWindowNORMAL;
+EQLIB_VAR CBuffWindow **ppBuffWindowSHORT;
 EQLIB_VAR CTargetWnd **ppTargetWnd;
 EQLIB_VAR CColorPickerWnd **ppColorPickerWnd;
 EQLIB_VAR CHotButtonWnd **ppHotButtonWnd;
@@ -465,7 +496,7 @@ EQLIB_VAR CFileSelectionWnd **ppFileSelectionWnd;
 EQLIB_VAR CLootWnd **ppLootWnd;
 EQLIB_VAR CPetInfoWnd **ppPetInfoWnd;
 EQLIB_VAR CActionsWnd **ppActionsWnd;
-//EQLIB_VAR CCombatAbilityWnd **ppCombatAbilityWnd;
+EQLIB_VAR CCombatAbilityWnd **ppCombatAbilityWnd;
 EQLIB_VAR CMerchantWnd **ppMerchantWnd;
 EQLIB_VAR CTradeWnd **ppTradeWnd;
 EQLIB_VAR CBazaarWnd **ppBazaarWnd;
@@ -497,6 +528,7 @@ EQLIB_VAR CPetitionQWnd **ppPetitionQWnd;
 EQLIB_VAR CSoulmarkWnd **ppSoulmarkWnd;
 EQLIB_VAR CTimeLeftWnd **ppTimeLeftWnd;
 EQLIB_VAR CTextOverlay **ppTextOverlay;
+EQLIB_VAR CPotionBeltWnd **ppPotionBeltWnd;
 
 
 #define pContextMenuManager (*ppContextMenuManager)
@@ -534,8 +566,8 @@ EQLIB_VAR CTextOverlay **ppTextOverlay;
 #define pMapViewWnd (*ppMapViewWnd)
 #define pEditLabelWnd (*ppEditLabelWnd)
 #define pOptionsWnd (*ppOptionsWnd)
-#define pBuffWindow (*ppBuffWindow)
-#define pBuffWindow (*ppBuffWindow)
+#define pBuffWnd (*ppBuffWindowNORMAL)
+#define pSongWnd (*ppBuffWindowSHORT)
 #define pTargetWnd (*ppTargetWnd)
 #define pColorPickerWnd (*ppColorPickerWnd)
 #define pHotButtonWnd (*ppHotButtonWnd)
@@ -583,86 +615,10 @@ EQLIB_VAR CTextOverlay **ppTextOverlay;
 #define pSoulmarkWnd (*ppSoulmarkWnd)
 #define pTimeLeftWnd (*ppTimeLeftWnd)
 #define pTextOverlay (*ppTextOverlay)
-
-/*
-#define pContextMenuManager (*ppContextMenuManager)
-#define pCursorAttachment (*ppCursorAttachment)
-#define pSocialEditWnd (*ppSocialEditWnd)
-#define pInvSlotMgr (*ppInvSlotMgr)
-#define pContainerMgr (*ppContainerMgr)
-#define pChatManager (*ppChatManager)
-#define pConfirmationDialog (*ppConfirmationDialog)
-#define pFacePick (*ppFacePick)
-#define pItemDisplayMgr (*ppItemDisplayMgr)
-#define pSpellDisplayMgr (*ppSpellDisplayMgr)
-#define pNoteWnd (*ppNoteWnd)
-#define pHelpWnd (*ppHelpWnd)
-#define pTipWnd (*ppTipWnd)
-#define pTipWnd (*ppTipWnd)
-#define pBookWnd (*ppBookWnd)
-#define pFriendsWnd (*ppFriendsWnd)
-#define pMusicPlayerWnd (*ppMusicPlayerWnd)
-#define pAlarmWnd (*ppAlarmWnd)
-#define pLoadskinWnd (*ppLoadskinWnd)
-#define pPetInfoWnd (*ppPetInfoWnd)
-#define pTrainWnd (*ppTrainWnd)
-#define pSkillsWnd (*ppSkillsWnd)
-#define pSkillsSelectWnd (*ppSkillsSelectWnd)
-#define pAAWnd (*ppAAWnd)
-#define pGroupWnd (*ppGroupWnd)
-#define pJournalNPCWnd (*ppJournalNPCWnd)
-#define pGroupSearchWnd (*ppGroupSearchWnd)
-#define pGroupSearchFiltersWnd (*ppGroupSearchFiltersWnd)
-#define pRaidWnd (*ppRaidWnd)
-#define pRaidOptionsWnd (*ppRaidOptionsWnd)
-#define pBreathWnd (*ppBreathWnd)
-#define pMapToolbarWnd (*ppMapToolbarWnd)
-#define pMapViewWnd (*ppMapViewWnd)
-#define pEditLabelWnd (*ppEditLabelWnd)
-#define pOptionsWnd (*ppOptionsWnd)
-#define pBuffWindow (*ppBuffWindow)
-#define pBuffWindow (*ppBuffWindow)
-#define pTargetWnd (*ppTargetWnd)
-#define pColorPickerWnd (*ppColorPickerWnd)
-#define pHotButtonWnd (*ppHotButtonWnd)
-#define pPlayerWnd (*ppPlayerWnd)
-#define pCastingWnd (*ppCastingWnd)
-#define pCastSpellWnd (*ppCastSpellWnd)
-#define pSpellBookWnd (*ppSpellBookWnd)
-#define pInventoryWnd (*ppInventoryWnd)
-#define pBankWnd (*ppBankWnd)
-#define pQuantityWnd (*ppQuantityWnd)
-#define pTextEntryWnd (*ppTextEntryWnd)
-#define pFileSelectionWnd (*ppFileSelectionWnd)
-#define pLootWnd (*ppLootWnd)
-#define pActionsWnd (*ppActionsWnd)
-#define pMerchantWnd (*ppMerchantWnd)
-#define pTradeWnd (*ppTradeWnd)
-#define pBazaarWnd (*ppBazaarWnd)
-#define pBazaarSearchWnd (*ppBazaarSearchWnd)
-#define pGiveWnd (*ppGiveWnd)
-#define pSelectorWnd (*ppSelectorWnd)
-#define pTrackingWnd (*ppTrackingWnd)
-#define pInspectWnd (*ppInspectWnd)
-#define pFeedbackWnd (*ppFeedbackWnd)
-#define pBugReportWnd (*ppBugReportWnd)
-#define pVideoModesWnd (*ppVideoModesWnd)
-#define pCompassWnd (*ppCompassWnd)
-#define pPlayerNotesWnd (*ppPlayerNotesWnd)
-#define pGemsGameWnd (*ppGemsGameWnd)
-#define pStoryWnd (*ppStoryWnd)
-#define pFindLocationWnd (*ppFindLocationWnd)
-#define pAdventureRequestWnd (*ppAdventureRequestWnd)
-#define pAdventureStatsWnd (*ppAdventureStatsWnd)
-#define pAdventureLeaderboardWnd (*ppAdventureLeaderboardWnd)
-#define pBodyTintWnd (*ppBodyTintWnd)
-#define pGuildMgmtWnd (*ppGuildMgmtWnd)
-#define pJournalTextWnd (*ppJournalTextWnd)
-#define pJournalCatWnd (*ppJournalCatWnd)
-#define pPetitionQWnd (*ppPetitionQWnd)
-#define pSoulmarkWnd (*ppSoulmarkWnd)
-#define pTimeLeftWnd (*ppTimeLeftWnd)
-/**/
+#define pPotionBeltWnd (*ppPotionBeltWnd)
+#define pDZMember (*ppDZMember)
+#define pDZTimerInfo (*ppDZTimerInfo)
+#define pTaskMember (*ppTaskMember)
 }
 using namespace MQ2Globals;
 
