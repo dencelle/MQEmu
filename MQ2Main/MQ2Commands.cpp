@@ -394,11 +394,11 @@ VOID UpdateItemInfo(PSPAWNINFO pChar, PCHAR szLine)
     if (NULL == (pCharInfo = GetCharInfo())) return;
 
     for (nInvIdx=0; nInvIdx < NUM_INV_SLOTS; nInvIdx++) {
-        if (GetCharInfo2()->InventoryArray[nInvIdx] != NULL) {
+        if (GetCharInfo2()->pInventoryArray->InventoryArray[nInvIdx] != NULL) {
             BOOL Found = FALSE;
             PITEMDB ItemDB = gItemDB;
             while (ItemDB) {
-                if (ItemDB->ID == GetCharInfo2()->InventoryArray[nInvIdx]->Item->ItemNumber) {
+                if (ItemDB->ID == GetItemFromContents(GetCharInfo2()->pInventoryArray->InventoryArray[nInvIdx])->ItemNumber) {
                     Found = TRUE;
                 }
                 ItemDB = ItemDB->pNext;
@@ -406,21 +406,21 @@ VOID UpdateItemInfo(PSPAWNINFO pChar, PCHAR szLine)
             if (!Found) {
                 PITEMDB Item = (PITEMDB)malloc(sizeof(ITEMDB));
                 Item->pNext = gItemDB;
-                Item->ID = GetCharInfo2()->InventoryArray[nInvIdx]->Item->ItemNumber;
-                strcpy(Item->szName, GetCharInfo2()->InventoryArray[nInvIdx]->Item->Name);
+                Item->ID = GetItemFromContents(GetCharInfo2()->pInventoryArray->InventoryArray[nInvIdx])->ItemNumber;
+                strcpy(Item->szName, GetItemFromContents(GetCharInfo2()->pInventoryArray->InventoryArray[nInvIdx])->Name);
                 DebugSpew("   New Item found - %d: %s", Item->ID, Item->szName);
                 gItemDB = Item;
             }
-            if (GetCharInfo2()->InventoryArray[nInvIdx]->Item->Type == ITEMTYPE_PACK) {
-                pContainer = GetCharInfo2()->InventoryArray[nInvIdx];
+            if (GetItemFromContents(GetCharInfo2()->pInventoryArray->InventoryArray[nInvIdx])->Type == ITEMTYPE_PACK) {
+                pContainer = GetCharInfo2()->pInventoryArray->InventoryArray[nInvIdx];
                 DebugSpew("   Opening Pack");
-                for (int nPackIdx = 0; nPackIdx < GetCharInfo2()->InventoryArray[nInvIdx]->Item->Slots; nPackIdx++) {
-                    if (pContainer->Contents[nPackIdx] != NULL) {
+                for (int nPackIdx = 0; nPackIdx < GetItemFromContents(GetCharInfo2()->pInventoryArray->InventoryArray[nInvIdx])->Slots; nPackIdx++) {
+                    if (pContainer->pContentsArray->Contents[nPackIdx] != NULL) {
                         Found = FALSE;
                         PITEMDB ItemDB = gItemDB;
                         while (ItemDB) {
-                            if (pContainer->Contents[nPackIdx]) {
-                                if (ItemDB->ID == pContainer->Contents[nPackIdx]->Item->ItemNumber) {
+                            if (pContainer->pContentsArray->Contents[nPackIdx]) {
+                                if (ItemDB->ID == GetItemFromContents(pContainer->pContentsArray->Contents[nPackIdx])->ItemNumber) {
                                     Found = TRUE;
                                 }
                                 ItemDB = ItemDB->pNext;
@@ -429,8 +429,8 @@ VOID UpdateItemInfo(PSPAWNINFO pChar, PCHAR szLine)
                         if (!Found) {
                             PITEMDB Item = (PITEMDB)malloc(sizeof(ITEMDB));
                             Item->pNext = gItemDB;
-                            Item->ID = pContainer->Contents[nPackIdx]->Item->ItemNumber;
-                            strcpy(Item->szName, pContainer->Contents[nPackIdx]->Item->Name);
+                            Item->ID = GetItemFromContents(pContainer->pContentsArray->Contents[nPackIdx])->ItemNumber;
+                            strcpy(Item->szName, GetItemFromContents(pContainer->pContentsArray->Contents[nPackIdx])->Name);
                             DebugSpew("      New Item found - %d: %s", Item->ID, Item->szName);
                             gItemDB = Item;
                         }
@@ -441,11 +441,11 @@ VOID UpdateItemInfo(PSPAWNINFO pChar, PCHAR szLine)
     }
 
     for (nInvIdx=0; nInvIdx < NUM_BANK_SLOTS; nInvIdx++) {
-        if (GetCharInfo()->Bank[nInvIdx] != NULL) {
+        if (GetCharInfo()->pBankArray->Bank[nInvIdx] != NULL) {
             BOOL Found = FALSE;
             PITEMDB ItemDB = gItemDB;
             while (ItemDB) {
-                if (ItemDB->ID == GetCharInfo()->Bank[nInvIdx]->Item->ItemNumber) {
+                if (ItemDB->ID == GetItemFromContents(GetCharInfo()->pBankArray->Bank[nInvIdx])->ItemNumber) {
                     Found = TRUE;
                 }
                 ItemDB = ItemDB->pNext;
@@ -453,22 +453,22 @@ VOID UpdateItemInfo(PSPAWNINFO pChar, PCHAR szLine)
             if (!Found) {
                 PITEMDB Item = (PITEMDB)malloc(sizeof(ITEMDB));
                 Item->pNext = gItemDB;
-                Item->ID = GetCharInfo()->Bank[nInvIdx]->Item->ItemNumber;
-                strcpy(Item->szName, pCharInfo->Bank[nInvIdx]->Item->Name);
+                Item->ID = GetItemFromContents(GetCharInfo()->pBankArray->Bank[nInvIdx])->ItemNumber;
+                strcpy(Item->szName, GetItemFromContents(pCharInfo->pBankArray->Bank[nInvIdx])->Name);
                 DebugSpew("   New Item found - %d: %s", Item->ID, Item->szName);
                 gItemDB = Item;
             }
-            if (pCharInfo->Bank[nInvIdx]->Item->Type == ITEMTYPE_PACK) {
+            if (GetItemFromContents(pCharInfo->pBankArray->Bank[nInvIdx])->Type == ITEMTYPE_PACK) {
                 LONG nPackIdx;
-                pContainer = pCharInfo->Bank[nInvIdx];
+                pContainer = pCharInfo->pBankArray->Bank[nInvIdx];
 
-                for (nPackIdx = 0; nPackIdx < pCharInfo->Bank[nInvIdx]->Item->Slots; nPackIdx++) {
-                    if (pContainer->Contents[nPackIdx] != NULL) {
+                for (nPackIdx = 0; nPackIdx < GetItemFromContents(pCharInfo->pBankArray->Bank[nInvIdx])->Slots; nPackIdx++) {
+                    if (pContainer->pContentsArray->Contents[nPackIdx] != NULL) {
                         PITEMDB ItemDB = gItemDB;
                         Found = FALSE;
                         while (ItemDB) {
-                            if (pContainer->Contents[nPackIdx]) {
-                                if (ItemDB->ID == pContainer->Contents[nPackIdx]->Item->ItemNumber) {
+                            if (pContainer->pContentsArray->Contents[nPackIdx]) {
+                                if (ItemDB->ID == GetItemFromContents(pContainer->pContentsArray->Contents[nPackIdx])->ItemNumber) {
                                     Found = TRUE;
                                 }
                                 ItemDB = ItemDB->pNext;
@@ -477,8 +477,8 @@ VOID UpdateItemInfo(PSPAWNINFO pChar, PCHAR szLine)
                         if (!Found) {
                             PITEMDB Item = (PITEMDB)malloc(sizeof(ITEMDB));
                             Item->pNext = gItemDB;
-                            Item->ID = pContainer->Contents[nPackIdx]->Item->ItemNumber;
-                            strcpy(Item->szName, pContainer->Contents[nPackIdx]->Item->Name);
+                            Item->ID = GetItemFromContents(pContainer->pContentsArray->Contents[nPackIdx])->ItemNumber;
+                            strcpy(Item->szName, GetItemFromContents(pContainer->pContentsArray->Contents[nPackIdx])->Name);
                             DebugSpew("      New Item found - %d: %s", Item->ID, Item->szName);
                             gItemDB = Item;
                         }
@@ -564,13 +564,12 @@ VOID BuyItem(PSPAWNINFO pChar, PCHAR szLine)
     CHAR szQty[MAX_STRING] = {0};
     PCHARINFO pCharInfo = NULL;
     DWORD Qty;
-    if (!GetCharInfo() || !((PEQMERCHWINDOW)pMerchantWnd)->pSelectedItem) return;
-    if (PCONTENTS pBase=(PCONTENTS)*((PEQMERCHWINDOW)pMerchantWnd)->pSelectedItem)
+    if (!GetCharInfo() || !((PEQMERCHWINDOW)pMerchantWnd)->SelectedSlotID) return;
     {
         GetArg(szQty,szLine,1);
         Qty = (DWORD)atoi(szQty);
         if (Qty < 1) return;
-        pMerchantWnd->RequestBuyItem(Qty>pBase->Item->StackSize?pBase->Item->StackSize:Qty);
+        pMerchantWnd->RequestBuyItem(Qty);
     }
 }
 // ***************************************************************************
@@ -589,13 +588,12 @@ VOID SellItem(PSPAWNINFO pChar, PCHAR szLine)
     CHAR szQty[MAX_STRING] = {0};
     PCHARINFO pCharInfo = NULL;
     DWORD Qty;
-    if (!GetCharInfo() || !((PEQMERCHWINDOW)pMerchantWnd)->pSelectedItem) return;
-    if (PCONTENTS pBase=(PCONTENTS)*((PEQMERCHWINDOW)pMerchantWnd)->pSelectedItem)
+    if (!GetCharInfo() || !((PEQMERCHWINDOW)pMerchantWnd)->SelectedSlotID) return;
     {
         GetArg(szQty,szLine,1);
         Qty = (DWORD)atoi(szQty);
         if (Qty < 1) return;
-        pMerchantWnd->RequestSellItem(Qty>pBase->Item->StackSize?pBase->Item->StackSize:Qty);
+        pMerchantWnd->RequestSellItem(Qty);
     }
 }
 // ***************************************************************************
@@ -1115,38 +1113,40 @@ VOID Identify(PSPAWNINFO pChar, PCHAR szLine)
     CHAR szMsg[MAX_STRING] = {0};
     CHAR szTmp[MAX_STRING] = {0};
     PCHARINFO2 pCharInfo = NULL;
+    PITEMINFO pItemInfo = NULL;
     if (NULL == (pCharInfo = GetCharInfo2())) return;
-    if (!pCharInfo->Cursor) {
+    if (!pCharInfo->pInventoryArray->Inventory.Cursor) {
         MacroError("You must be holding an item to identify it.");
         return;
     }
 
-    DebugSpew("Identify - %s", pCharInfo->Cursor->Item->LoreName);
+    pItemInfo = GetItemFromContents(pCharInfo->pInventoryArray->Inventory.Cursor);
+    DebugSpew("Identify - %s", pItemInfo->LoreName);
     WriteChatColor(" ",USERCOLOR_SPELLS);
-    if        ( pCharInfo->Cursor->Item->Type == ITEMTYPE_NORMAL && pCharInfo->Cursor->Item->ItemType < MAX_ITEMTYPES && szItemTypes[pCharInfo->Cursor->Item->ItemType] != NULL  )
-        sprintf(szMsg,"Item: %s (Slot: %s, Weight: %d.%d, Value: %dcp, Type: %s)",pCharInfo->Cursor->Item->Name,szSize[pCharInfo->Cursor->Item->Size], (INT)(pCharInfo->Cursor->Item->Weight/10),(pCharInfo->Cursor->Item->Weight) % 10, pCharInfo->Cursor->Item->Cost, szItemTypes[pCharInfo->Cursor->Item->ItemType] );
-    else if ( pCharInfo->Cursor->Item->Type == ITEMTYPE_PACK && pCharInfo->Cursor->Item->Combine < MAX_COMBINES && szCombineTypes[pCharInfo->Cursor->Item->Combine] != NULL )
-        sprintf(szMsg,"Item: %s (Slot: %s, Weight: %d.%d, Value: %dcp, Type: %s)",pCharInfo->Cursor->Item->Name,szSize[pCharInfo->Cursor->Item->Size], (INT)(pCharInfo->Cursor->Item->Weight/10),(pCharInfo->Cursor->Item->Weight) % 10, pCharInfo->Cursor->Item->Cost, szCombineTypes[pCharInfo->Cursor->Item->Combine] );
+    if        ( pItemInfo->Type == ITEMTYPE_NORMAL && pItemInfo->ItemType < MAX_ITEMTYPES && szItemTypes[pItemInfo->ItemType] != NULL  )
+        sprintf(szMsg,"Item: %s (Slot: %s, Weight: %d.%d, Value: %dcp, Type: %s)",pItemInfo->Name,szSize[pItemInfo->Size], (INT)(pItemInfo->Weight/10),(pItemInfo->Weight) % 10, pItemInfo->Cost, szItemTypes[pItemInfo->ItemType] );
+    else if ( pItemInfo->Type == ITEMTYPE_PACK && pItemInfo->Combine < MAX_COMBINES && szCombineTypes[pItemInfo->Combine] != NULL )
+        sprintf(szMsg,"Item: %s (Slot: %s, Weight: %d.%d, Value: %dcp, Type: %s)",pItemInfo->Name,szSize[pItemInfo->Size], (INT)(pItemInfo->Weight/10),(pItemInfo->Weight) % 10, pItemInfo->Cost, szCombineTypes[pItemInfo->Combine] );
     else
-        sprintf(szMsg,"Item: %s (Slot: %s, Weight: %d.%d, Value: %dcp)",pCharInfo->Cursor->Item->Name,szSize[pCharInfo->Cursor->Item->Size], (INT)(pCharInfo->Cursor->Item->Weight/10),(pCharInfo->Cursor->Item->Weight) % 10, pCharInfo->Cursor->Item->Cost );
+        sprintf(szMsg,"Item: %s (Slot: %s, Weight: %d.%d, Value: %dcp)",pItemInfo->Name,szSize[pItemInfo->Size], (INT)(pItemInfo->Weight/10),(pItemInfo->Weight) % 10, pItemInfo->Cost );
 
 
     WriteChatColor(szMsg,USERCOLOR_SPELLS);
-    if ((pCharInfo->Cursor->Item->LoreName[0] != '*') && (strcmp(pCharInfo->Cursor->Item->LoreName,pCharInfo->Cursor->Item->Name))) {
-        sprintf(szMsg,"Lore Name: %s",pCharInfo->Cursor->Item->LoreName);
+    if ((pItemInfo->LoreName[0] != '*') && (strcmp(pItemInfo->LoreName,pItemInfo->Name))) {
+        sprintf(szMsg,"Lore Name: %s",pItemInfo->LoreName);
         WriteChatColor(szMsg,USERCOLOR_SPELLS);
-    } else     if ((pCharInfo->Cursor->Item->LoreName[0] == '*') && (strcmp(pCharInfo->Cursor->Item->LoreName+1,pCharInfo->Cursor->Item->Name))) {
-        sprintf(szMsg,"Lore Name: %s",pCharInfo->Cursor->Item->LoreName+1);
+    } else     if ((pItemInfo->LoreName[0] == '*') && (strcmp(pItemInfo->LoreName+1,pItemInfo->Name))) {
+        sprintf(szMsg,"Lore Name: %s",pItemInfo->LoreName+1);
         WriteChatColor(szMsg,USERCOLOR_SPELLS);
     }
 
     strcpy(szMsg,"Flags: ");
-    if (pCharInfo->Cursor->Item->LoreName[0] == '*') strcat(szMsg,"LORE ");
-    if (pCharInfo->Cursor->Item->NoDrop == 0) strcat(szMsg,"NODROP ");
-    if (pCharInfo->Cursor->Item->NoRent == 0) strcat(szMsg,"NORENT ");
-    if (pCharInfo->Cursor->Item->Type == ITEMTYPE_NORMAL) {
-        if (pCharInfo->Cursor->Item->Magic == 1) strcat(szMsg,"MAGIC ");
-        BYTE Light = pCharInfo->Cursor->Item->Light;
+    if (pItemInfo->LoreName[0] == '*') strcat(szMsg,"LORE ");
+    if (pItemInfo->NoDrop == 0) strcat(szMsg,"NODROP ");
+    if (pItemInfo->NoRent == 0) strcat(szMsg,"NORENT ");
+    if (pItemInfo->Type == ITEMTYPE_NORMAL) {
+        if (pItemInfo->Magic == 1) strcat(szMsg,"MAGIC ");
+        BYTE Light = pItemInfo->Light;
         if ((Light>0) && (Light<=LIGHT_COUNT)) {
             strcat(szMsg,"(Light: ");
             strcat(szMsg,szLights[Light]);
@@ -1155,98 +1155,98 @@ VOID Identify(PSPAWNINFO pChar, PCHAR szLine)
     }
     if (strlen(szMsg) > 7) WriteChatColor(szMsg,USERCOLOR_SPELLS);
 
-    if (pCharInfo->Cursor->Item->Type == ITEMTYPE_PACK) {
+    if (pItemInfo->Type == ITEMTYPE_PACK) {
         CHAR szCombine[MAX_STRING] = {0};
-        if ((pCharInfo->Cursor->Item->Combine < MAX_COMBINES) && (szCombineTypes[pCharInfo->Cursor->Item->Combine] != NULL)) {
-            strcpy(szCombine,szCombineTypes[pCharInfo->Cursor->Item->Combine]);
+        if ((pItemInfo->Combine < MAX_COMBINES) && (szCombineTypes[pItemInfo->Combine] != NULL)) {
+            strcpy(szCombine,szCombineTypes[pItemInfo->Combine]);
         } else {
-            sprintf(szCombine,"*Unknown%d",pCharInfo->Cursor->Item->Combine);
+            sprintf(szCombine,"*Unknown%d",pItemInfo->Combine);
         }
-        sprintf(szMsg,"Container: %d Slot %s, %d%% Reduction, Combine=%s",pCharInfo->Cursor->Item->Slots,szSize[pCharInfo->Cursor->Item->SizeCapacity],pCharInfo->Cursor->Item->WeightReduction,szCombine);
-    } else if (pCharInfo->Cursor->Item->Type == ITEMTYPE_BOOK) {
-        //sprintf(szMsg,"Book file: %s", pCharInfo->Cursor->Item->Book.File);
+        sprintf(szMsg,"Container: %d Slot %s, %d%% Reduction, Combine=%s",pItemInfo->Slots,szSize[pItemInfo->SizeCapacity],pItemInfo->WeightReduction,szCombine);
+    } else if (pItemInfo->Type == ITEMTYPE_BOOK) {
+        //sprintf(szMsg,"Book file: %s", pItemInfo->Book.File);
     } else {
         strcpy(szMsg,"Item: ");
-        if (pCharInfo->Cursor->Item->AC) {
-            sprintf(szTmp,"AC%d ",pCharInfo->Cursor->Item->AC);
+        if (pItemInfo->AC) {
+            sprintf(szTmp,"AC%d ",pItemInfo->AC);
             strcat(szMsg,szTmp);
         }
-        if (pCharInfo->Cursor->Item->Damage) {
-            sprintf(szTmp,"%dDam ",pCharInfo->Cursor->Item->Damage);
+        if (pItemInfo->Damage) {
+            sprintf(szTmp,"%dDam ",pItemInfo->Damage);
             strcat(szMsg,szTmp);
         }
-        if (pCharInfo->Cursor->Item->Delay) {
-            sprintf(szTmp,"%dDly ",pCharInfo->Cursor->Item->Delay);
-            strcat(szMsg,szTmp);
-        }
-
-        if (pCharInfo->Cursor->Item->Range) {
-            sprintf(szTmp,"%dRng ",pCharInfo->Cursor->Item->Range);
+        if (pItemInfo->Delay) {
+            sprintf(szTmp,"%dDly ",pItemInfo->Delay);
             strcat(szMsg,szTmp);
         }
 
-        if (pCharInfo->Cursor->Item->HP) {
-            sprintf(szTmp,"%dHP ",pCharInfo->Cursor->Item->HP);
+        if (pItemInfo->Range) {
+            sprintf(szTmp,"%dRng ",pItemInfo->Range);
             strcat(szMsg,szTmp);
         }
-        if (pCharInfo->Cursor->Item->Mana) {
-            sprintf(szTmp,"%dMana ",pCharInfo->Cursor->Item->Mana);
+
+        if (pItemInfo->HP) {
+            sprintf(szTmp,"%dHP ",pItemInfo->HP);
             strcat(szMsg,szTmp);
         }
-        if (pCharInfo->Cursor->Item->STR) {
-            sprintf(szTmp,"%dSTR ",pCharInfo->Cursor->Item->STR);
+        if (pItemInfo->Mana) {
+            sprintf(szTmp,"%dMana ",pItemInfo->Mana);
+            strcat(szMsg,szTmp);
+        }
+        if (pItemInfo->STR) {
+            sprintf(szTmp,"%dSTR ",pItemInfo->STR);
             strcat(szMsg,szTmp) ;
         }
-        if (pCharInfo->Cursor->Item->STA) {
-            sprintf(szTmp,"%dSTA ",pCharInfo->Cursor->Item->STA);
+        if (pItemInfo->STA) {
+            sprintf(szTmp,"%dSTA ",pItemInfo->STA);
             strcat(szMsg,szTmp);
         }
-        if (pCharInfo->Cursor->Item->DEX) {
-            sprintf(szTmp,"%dDEX ",pCharInfo->Cursor->Item->DEX);
+        if (pItemInfo->DEX) {
+            sprintf(szTmp,"%dDEX ",pItemInfo->DEX);
             strcat(szMsg,szTmp);
         }
-        if (pCharInfo->Cursor->Item->AGI) {
-            sprintf(szTmp,"%dAGI ",pCharInfo->Cursor->Item->AGI);
+        if (pItemInfo->AGI) {
+            sprintf(szTmp,"%dAGI ",pItemInfo->AGI);
             strcat(szMsg,szTmp);
         }
-        if (pCharInfo->Cursor->Item->WIS) {
-            sprintf(szTmp,"%dWIS ",pCharInfo->Cursor->Item->WIS);
+        if (pItemInfo->WIS) {
+            sprintf(szTmp,"%dWIS ",pItemInfo->WIS);
             strcat(szMsg,szTmp);
         }
-        if (pCharInfo->Cursor->Item->INT) {
-            sprintf(szTmp,"%dINT ",pCharInfo->Cursor->Item->INT);
+        if (pItemInfo->INT) {
+            sprintf(szTmp,"%dINT ",pItemInfo->INT);
             strcat(szMsg,szTmp);
         }
-        if (pCharInfo->Cursor->Item->CHA) {
-            sprintf(szTmp,"%dCHA ",pCharInfo->Cursor->Item->CHA);
+        if (pItemInfo->CHA) {
+            sprintf(szTmp,"%dCHA ",pItemInfo->CHA);
             strcat(szMsg,szTmp);
         }
-        if (pCharInfo->Cursor->Item->SvMagic) {
-            sprintf(szTmp,"%dSvM ",pCharInfo->Cursor->Item->SvMagic);
+        if (pItemInfo->SvMagic) {
+            sprintf(szTmp,"%dSvM ",pItemInfo->SvMagic);
             strcat(szMsg,szTmp);
         }
-        if (pCharInfo->Cursor->Item->SvDisease) {
-            sprintf(szTmp,"%dSvD ",pCharInfo->Cursor->Item->SvDisease);
+        if (pItemInfo->SvDisease) {
+            sprintf(szTmp,"%dSvD ",pItemInfo->SvDisease);
             strcat(szMsg,szTmp);
         }
-        if (pCharInfo->Cursor->Item->SvPoison) {
-            sprintf(szTmp,"%dSvP ",pCharInfo->Cursor->Item->SvPoison);
+        if (pItemInfo->SvPoison) {
+            sprintf(szTmp,"%dSvP ",pItemInfo->SvPoison);
             strcat(szMsg,szTmp);
         }
-        if (pCharInfo->Cursor->Item->SvFire) {
-            sprintf(szTmp,"%dSvF ",pCharInfo->Cursor->Item->SvFire);
+        if (pItemInfo->SvFire) {
+            sprintf(szTmp,"%dSvF ",pItemInfo->SvFire);
             strcat(szMsg,szTmp);
         }
-        if (pCharInfo->Cursor->Item->SvCold) {
-            sprintf(szTmp,"%dSvC ",pCharInfo->Cursor->Item->SvCold);
+        if (pItemInfo->SvCold) {
+            sprintf(szTmp,"%dSvC ",pItemInfo->SvCold);
             strcat(szMsg,szTmp);
         }
-        if (pCharInfo->Cursor->Item->SvCorruption) {
-            sprintf(szTmp,"%dSvCorruption ",pCharInfo->Cursor->Item->SvCorruption);
+        if (pItemInfo->SvCorruption) {
+            sprintf(szTmp,"%dSvCorruption ",pItemInfo->SvCorruption);
             strcat(szMsg,szTmp);
         }
-        if (((EQ_Item*)pCharInfo->Cursor)->IsStackable()==1) {
-            sprintf(szTmp,"Stack size = %d ",pCharInfo->Cursor->StackCount);
+        if (((EQ_Item*)pCharInfo->pInventoryArray->Inventory.Cursor)->IsStackable()==1) {
+            sprintf(szTmp,"Stack size = %d ",pCharInfo->pInventoryArray->Inventory.Cursor->StackCount);
             strcat(szMsg,szTmp);
         }
     }
@@ -1840,20 +1840,25 @@ VOID DoAbility(PSPAWNINFO pChar, PCHAR szLine)
     DWORD Index;
     CHAR szBuffer[MAX_STRING]={0};
     GetArg(szBuffer,szLine,1); 
+
     // display available abilities list
     if(!stricmp(szBuffer,"list")) {
         WriteChatColor("Abilities & Combat Skills:",USERCOLOR_DEFAULT);
 
         // display skills that have activated state
-        for(Index=0; Index<NUM_SKILLS; Index++) {
-            if(pSkillMgr->pSkill[Index]->Activated) {
-                bool Avail=(GetCharInfo2()->Skill[Index]>0);
-                for(int btn=0; !Avail && btn<10; btn++) {
-                    if(EQADDR_DOABILITYLIST[btn]==Index) Avail=true;
-                }
+        for(Index=0; Index<NUM_SKILLS; Index++)
+        {
+            if(((CharacterZoneClient*)pCharData1)->HasSkill(Index))
+            {
+                
+                bool Avail=pSkillMgr->pSkill[Index]->Activated;
+
                 // make sure remove trap is added, they give it to everyone except rogues
-                if(Index==75 && strncmp(pEverQuest->GetClassDesc(GetCharInfo2()->Class & 0xFF),"Rogue",6)) Avail=true;
-                if(Avail) {
+                if(Index==75 && strncmp(pEverQuest->GetClassDesc(GetCharInfo2()->Class & 0xFF),"Rogue",6))
+                    Avail=true;
+
+                if(Avail)
+                {
                     sprintf(szBuffer,"<\ag%s\ax>",szSkills[Index]);
                     WriteChatColor(szBuffer,USERCOLOR_DEFAULT);
                 }
@@ -1861,8 +1866,10 @@ VOID DoAbility(PSPAWNINFO pChar, PCHAR szLine)
         }
 
         // display innate skills that are available
-        for(Index=0; Index<28; Index++) {
-            if(GetCharInfo2()->InnateSkill[Index]!=0xFF && strlen(szSkills[Index+100])>3) {
+        for(Index=0; Index<28; Index++)
+        {
+            if(GetCharInfo2()->InnateSkill[Index]!=0xFF && strlen(szSkills[Index+100])>3)
+            {
                 sprintf(szBuffer,"<\ag%s\ax>",szSkills[Index+100]);
                 WriteChatColor(szBuffer,USERCOLOR_DEFAULT);
             }
@@ -1870,9 +1877,12 @@ VOID DoAbility(PSPAWNINFO pChar, PCHAR szLine)
 
         // display discipline i have
         WriteChatColor("Combat Abilities:",USERCOLOR_DEFAULT);
-        for(Index=0;Index<NUM_COMBAT_ABILITIES;Index++) {
-            if(GetCharInfo2()->CombatAbilities[Index]) {
-                if(PSPELL pCA=GetSpellByID(GetCharInfo2()->CombatAbilities[Index])) {
+        for(Index=0;Index<NUM_COMBAT_ABILITIES;Index++)
+        {
+            if(GetCharInfo2()->CombatAbilities[Index])
+            {
+                if(PSPELL pCA=GetSpellByID(GetCharInfo2()->CombatAbilities[Index]))
+                {
                     sprintf(szBuffer, "<\ag%s\ax>",pCA->Name);
                     WriteChatColor(szBuffer,USERCOLOR_DEFAULT);
                 }
@@ -1884,19 +1894,30 @@ VOID DoAbility(PSPAWNINFO pChar, PCHAR szLine)
     // scan for matching abilities name
     for(Index=0; Index < 128; Index++) {
         if((Index < NUM_SKILLS && (pSkillMgr->pSkill[Index])->Activated) ||
-            (Index >= NUM_SKILLS && GetCharInfo2()->InnateSkill[Index-100]!=0xFF)) {
-                if(!stricmp(szBuffer,szSkills[Index])) {
-                    pCharData1->UseSkill((unsigned char)Index,(EQPlayer*)pCharData1);
+            (Index >= NUM_SKILLS && GetCharInfo2()->InnateSkill[Index-100]!=0xFF))
+        {
+            if(!stricmp(szBuffer,szSkills[Index]))
+            {
+                if(!((CharacterZoneClient*)pCharData1)->HasSkill(Index))
+                {
+                    WriteChatf("you do not have this skill");
                     return;
                 }
+                pCharData1->UseSkill((unsigned char)Index,(EQPlayer*)pCharData1);
+                return;
+            }
         }
     }
 
     // scan for matching discipline name
-    for(Index=0; Index<NUM_COMBAT_ABILITIES; Index++) {
-        if(GetCharInfo2()->CombatAbilities[Index]) {
-            if(PSPELL pCA=GetSpellByID(GetCharInfo2()->CombatAbilities[Index])) {
-                if(!stricmp(pCA->Name,szBuffer)) {
+    for(Index=0; Index<NUM_COMBAT_ABILITIES; Index++)
+    {
+        if(GetCharInfo2()->CombatAbilities[Index])
+        {
+            if(PSPELL pCA=GetSpellByID(GetCharInfo2()->CombatAbilities[Index]))
+            {
+                if(!stricmp(pCA->Name,szBuffer))
+                {
                     pCharData->DoCombatAbility(pCA->ID);
                     return;
                 }
@@ -2011,9 +2032,9 @@ VOID Cast(PSPAWNINFO pChar, PCHAR szLine)
         BOOL FOUND = FALSE;
         DWORD slot = 0;
         for (int i=0;i<NUM_INV_SLOTS;i++) {
-            if (GetCharInfo2()->InventoryArray[i])
-                if (!_stricmp(szArg2,GetCharInfo2()->InventoryArray[i]->Item->Name)) { 
-                    DebugSpew("cast test slot %d = %s",i,GetCharInfo2()->InventoryArray[i]->Item->Name); 
+            if (GetCharInfo2()->pInventoryArray->InventoryArray[i])
+                if (!_stricmp(szArg2,GetItemFromContents(GetCharInfo2()->pInventoryArray->InventoryArray[i])->Name)) { 
+                    DebugSpew("cast test slot %d = %s",i,GetItemFromContents(GetCharInfo2()->pInventoryArray->InventoryArray[i])->Name); 
                     slot = (DWORD)i;
                     FOUND = TRUE;
                     break;
@@ -2452,16 +2473,19 @@ VOID BankList(PSPAWNINFO pChar, PCHAR szLine)
     WriteChatColor("-------------------------",USERCOLOR_DEFAULT);
     char Link[256];
     for (int a=0;a<NUM_BANK_SLOTS;a++) {
-        pContainer=pCharInfo->Bank[a];
+        pContainer=pCharInfo->pBankArray->Bank[a];
         if (pContainer) {
             GetItemLink(pContainer,&Link[0]);
-            sprintf(szTemp,"Slot %d: %dx %s (%s)",a,pContainer->StackCount ? pContainer->StackCount : 1,Link,pContainer->Item->LoreName);
+            sprintf(szTemp,"Slot %d: %dx %s (%s)",a,pContainer->StackCount ? pContainer->StackCount : 1,Link,GetItemFromContents(pContainer)->LoreName);
             WriteChatColor(szTemp,USERCOLOR_DEFAULT);
-            for (int b=0;b<pContainer->Item->Slots;b++) {
-                if (pContainer->Contents[b]) {
-                    GetItemLink(pContainer->Contents[b],&Link[0]);
-                    sprintf(szTemp,"- Slot %d: %dx %s (%s)",b,pContainer->Contents[b]->StackCount ? pContainer->Contents[b]->StackCount : 1,Link,pContainer->Contents[b]->Item->LoreName);
-                    WriteChatColor(szTemp,USERCOLOR_DEFAULT);
+            if(pContainer->pContentsArray)
+            {
+                for (int b=0;b<GetItemFromContents(pContainer)->Slots;b++) {
+                    if (pContainer->pContentsArray->Contents[b]) {
+                        GetItemLink(pContainer->pContentsArray->Contents[b],&Link[0]);
+                        sprintf(szTemp,"- Slot %d: %dx %s (%s)",b,pContainer->pContentsArray->Contents[b]->StackCount ? pContainer->pContentsArray->Contents[b]->StackCount : 1,Link,GetItemFromContents(pContainer->pContentsArray->Contents[b])->LoreName);
+                        WriteChatColor(szTemp,USERCOLOR_DEFAULT);
+                    }
                 }
             }
         }
@@ -2485,7 +2509,7 @@ VOID WindowState(PSPAWNINFO pChar, PCHAR szLine)
         BYTE State=99;
         if (!stricmp(Arg2,"open")) State=1;
         if (!stricmp(Arg2,"close")) State=0;
-        if (pWnd->Show==State) State=99;
+        if (pWnd->dShow==State) State=99;
         switch (State) {
                 case 0:
                     ((CXWnd*)pWnd)->Show(0,1);
@@ -2503,7 +2527,7 @@ VOID WindowState(PSPAWNINFO pChar, PCHAR szLine)
                     ((CSidlScreenWnd*)pWnd)->StoreIniVis();
                     break;
                 case 99:
-                    sprintf(szBuffer,"Window '%s' is currently %s",pWnd->WindowText->Text,(pWnd->Show==0)?"closed":"open");
+                    sprintf(szBuffer,"Window '%s' is currently %s",pWnd->WindowText->Text,(pWnd->dShow==0)?"closed":"open");
                     break;
         }
         WriteChatColor(szBuffer,USERCOLOR_DEFAULT);
@@ -2992,9 +3016,9 @@ VOID CombineCmd(PSPAWNINFO pChar, PCHAR szLine)
 
 VOID DropCmd(PSPAWNINFO pChar, PCHAR szLine)
 {
-    if (GetCharInfo2()->Cursor)
+    if (GetCharInfo2()->pInventoryArray->Inventory.Cursor)
     {
-        if (((EQ_Item*)GetCharInfo2()->Cursor)->CanDrop(1))
+        if (((EQ_Item*)GetCharInfo2()->pInventoryArray->Inventory.Cursor)->CanDrop(0,1))
         {
             pEverQuest->DropHeldItemOnGround(1);
         }

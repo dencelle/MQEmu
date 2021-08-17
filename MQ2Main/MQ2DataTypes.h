@@ -904,6 +904,15 @@ public:
         Chronobines=176,
         Mercenary=177,
         XTarget=178,
+        Haste=179,
+        MercenaryStance=180,
+        SkillCap=181,
+        GemTimer=182,
+        HaveExpansion=183,
+        PctAggro=184,
+        SecondaryPctAggro=185,
+        SecondaryAggroPlayer=186,
+        AggroLock=187,
     };
     static enum CharacterMethods
     {
@@ -1089,6 +1098,15 @@ public:
         TypeMember(Chronobines);
         TypeMember(Mercenary);
         TypeMember(XTarget);
+        TypeMember(Haste);
+        TypeMember(MercenaryStance);
+        TypeMember(SkillCap);  // 181
+        TypeMember(GemTimer);
+        TypeMember(HaveExpansion);
+        TypeMember(PctAggro);
+        TypeMember(SecondaryPctAggro);
+        TypeMember(SecondaryAggroPlayer);
+        TypeMember(AggroLock);
 
         TypeMethod(Stand); 
         TypeMethod(Sit); 
@@ -1596,7 +1614,7 @@ public:
     {
         if (!VarPtr.Ptr)
             return false;
-        strcpy(Destination,((PCONTENTS)VarPtr.Ptr)->Item->Name);
+        strcpy(Destination,GetItemFromContents((PCONTENTS)VarPtr.Ptr)->Name);
         return true;
     }
     void InitVariable(MQ2VARPTR &VarPtr) 
@@ -1940,7 +1958,11 @@ public:
         RightMouseHeldUp=8,
         ListSelect=9,
     };
+#ifdef ISBOXER_COMPAT
+    MQ2WindowType():MQ2Type("eqwindow")
+#else
     MQ2WindowType():MQ2Type("window")
+#endif
     {
         TypeMember(Open);
         TypeMember(Child);
@@ -1997,7 +2019,7 @@ public:
 
     bool ToString(MQ2VARPTR VarPtr, PCHAR Destination)
     {
-        if (VarPtr.Ptr && ((PCSIDLWND)VarPtr.Ptr)->Show)
+        if (VarPtr.Ptr && ((PCSIDLWND)VarPtr.Ptr)->dShow)
             strcpy(Destination,"TRUE");
         else
             strcpy(Destination,"FALSE");
@@ -3126,6 +3148,7 @@ public:
         MainAssist=6,
         Puller=7,
         Mercenary=8,
+        PctAggro=9,
     };
     static enum GroupMemberMethods
     {
@@ -3140,6 +3163,7 @@ public:
         TypeMember(MainAssist);
         TypeMember(Puller);
         TypeMember(Mercenary);
+        TypeMember(PctAggro);
     }
 
     ~MQ2GroupMemberType()
@@ -3542,13 +3566,23 @@ public:
         Buff = 1,
         BuffCount = 2,
         BuffDuration = 3,
+        PctAggro = 4,
+        SecondaryPctAggro = 5,
+        SecondaryAggroPlayer = 6,
     };
 
+#ifdef ISBOXER_COMPAT
+    MQ2TargetType():MQ2Type("eqtarget")
+#else
     MQ2TargetType():MQ2Type("target")
+#endif
     {
         TypeMember(Buff);
         TypeMember(BuffCount);
         TypeMember(BuffDuration);
+        TypeMember(PctAggro);
+        TypeMember(SecondaryPctAggro);
+        TypeMember(SecondaryAggroPlayer);
     }
 
     ~MQ2TargetType()
@@ -3612,6 +3646,7 @@ public:
         Type = 1,
         ID = 2,
         Name = 3,
+        PctAggro = 4,
     };
 
     MQ2XTargetType():MQ2Type("xtarget")
@@ -3619,6 +3654,7 @@ public:
         TypeMember(Type);
         TypeMember(ID);
         TypeMember(Name);
+        TypeMember(PctAggro);
     }
 
     ~MQ2XTargetType()
@@ -3630,8 +3666,11 @@ public:
 
     bool ToString(MQ2VARPTR VarPtr, PCHAR Destination)
     {
-        if(VarPtr.Ptr && ((PXTARGETDATA)VarPtr.Ptr)->Name[0])
-            strcpy(Destination, ((PXTARGETDATA)VarPtr.Ptr)->Name);
+        if(GetCharInfo() && GetCharInfo()->pXTargetMgr)
+        {
+            XTARGETDATA xtd = GetCharInfo()->pXTargetMgr->pXTargetArray->pXTargetData[VarPtr.DWord];
+            strcpy(Destination, xtd.Name);
+        }
         else
             strcpy(Destination, "NULL");
         return true;

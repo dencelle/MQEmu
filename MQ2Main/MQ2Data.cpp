@@ -500,7 +500,7 @@ TLO(dataIf)
 #endif
 TLO(dataCursor)
 {
-    if (Ret.Ptr=GetCharInfo2()->Cursor)
+    if (Ret.Ptr=GetCharInfo2()->pInventoryArray->Inventory.Cursor)
     {
         Ret.Type=pItemType;
         return true;
@@ -675,7 +675,7 @@ TLO(dataIni)
             {
                 if (!strcmp(pKey,"-1"))
                     pKey=0;
-                pDefault=strtok(NULL,"¦");
+                pDefault=strtok(NULL,"\xA6");
                 if (!pDefault)
                     pDefault="";
             }
@@ -750,11 +750,19 @@ TLO(dataDefined)
 
 TLO(dataSelectedItem)
 {
-    if (((PEQINVSLOTMGR)pInvSlotMgr)->pSelectedItem && ((PEQCURRENTSELECTION)((PEQINVSLOTMGR)pInvSlotMgr)->pSelectedItem)->TextureAnim)
+    if (((PEQINVSLOTMGR)pInvSlotMgr)->pSelectedItem && ((PEQINVSLOTMGR)pInvSlotMgr)->pSelectedItem->InvSlot)
     {
-        Ret.Ptr=*(PCONTENTS *)((PEQCURRENTSELECTION)((PEQINVSLOTMGR)pInvSlotMgr)->pSelectedItem)->TextureAnim;
-        Ret.Type=pItemType;
-        return true;
+        class CInvSlot *pCIS = NULL;
+        struct _CONTENTS *pC = NULL;
+
+        pCIS = (class CInvSlot *) ((PEQINVSLOTMGR)pInvSlotMgr)->pSelectedItem;
+        pCIS->GetItemBase(&pC);
+
+        if (pC) {
+            Ret.Ptr = pC;
+            Ret.Type=pItemType;
+            return true;
+        }
     }
     return false;
 }
@@ -776,16 +784,19 @@ TLO(dataFindItemBank)
     CHAR Temp[MAX_STRING]={0};
     strlwr(strcpy(Name,pName));
     PCHARINFO pCharInfo=GetCharInfo();
+    unsigned long nPack;
 
 
-    for (unsigned long nPack=0 ; nPack < NUM_BANK_SLOTS ; nPack++)
+    for (nPack=0 ; nPack < NUM_BANK_SLOTS ; nPack++)
     {
         PCHARINFO pCharInfo=GetCharInfo();
-        if (PCONTENTS pPack=pCharInfo->Bank[nPack])
+        PCONTENTS pPack;
+
+	if (pCharInfo->pBankArray && (pPack=pCharInfo->pBankArray->Bank[nPack]))
         {
             if (bExact)
             {
-                if (!stricmp(Name,pPack->Item->Name))
+                if (!stricmp(Name,GetItemFromContents(pPack)->Name))
                 {
                     Ret.Ptr=pPack;
                     Ret.Type=pItemType;
@@ -794,22 +805,23 @@ TLO(dataFindItemBank)
             }
             else 
             {
-                if(strstr(strlwr(strcpy(Temp,pPack->Item->Name)),Name))
+                if(strstr(strlwr(strcpy(Temp,GetItemFromContents(pPack)->Name)),Name))
                 {
                     Ret.Ptr=pPack;
                     Ret.Type=pItemType;
                     return true;
                 }
             }
-            if (pPack->Item->Type==ITEMTYPE_PACK)
+            if (GetItemFromContents(pPack)->Type==ITEMTYPE_PACK && pPack->pContentsArray)
             {
-                for (unsigned long nItem=0 ; nItem < pPack->Item->Slots ; nItem++)
+                for (unsigned long nItem=0 ; nItem < GetItemFromContents(pPack)->Slots ; nItem++)
                 {
-                    if (PCONTENTS pItem=pPack->Contents[nItem])
+                    PCONTENTS pItem;
+                    if (pPack->pContentsArray && (pItem=pPack->pContentsArray->Contents[nItem]))
                     {
                         if (bExact)
                         {
-                            if (!stricmp(Name,pItem->Item->Name))
+                            if (!stricmp(Name,GetItemFromContents(pItem)->Name))
                             {
                                 Ret.Ptr=pItem;
                                 Ret.Type=pItemType;
@@ -818,7 +830,61 @@ TLO(dataFindItemBank)
                         }
                         else 
                         {
-                            if(strstr(strlwr(strcpy(Temp,pItem->Item->Name)),Name))
+                            if(strstr(strlwr(strcpy(Temp,GetItemFromContents(pItem)->Name)),Name))
+                            {
+                                Ret.Ptr=pItem;
+                                Ret.Type=pItemType;
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    for (nPack=0 ; nPack < NUM_SHAREDBANK_SLOTS ; nPack++)
+    {
+        PCHARINFO pCharInfo=GetCharInfo();
+        PCONTENTS pPack;
+        if (pCharInfo->pSharedBankArray && (pPack=pCharInfo->pSharedBankArray->SharedBank[nPack]))
+        {
+            if (bExact)
+            {
+                if (!stricmp(Name,GetItemFromContents(pPack)->Name))
+                {
+                    Ret.Ptr=pPack;
+                    Ret.Type=pItemType;
+                    return true;
+                }
+            }
+            else 
+            {
+                if(strstr(strlwr(strcpy(Temp,GetItemFromContents(pPack)->Name)),Name))
+                {
+                    Ret.Ptr=pPack;
+                    Ret.Type=pItemType;
+                    return true;
+                }
+            }
+            if (GetItemFromContents(pPack)->Type==ITEMTYPE_PACK && pPack->pContentsArray)
+            {
+                for (unsigned long nItem=0 ; nItem < GetItemFromContents(pPack)->Slots ; nItem++)
+                {
+                    PCONTENTS pItem;
+                    if (pPack->pContentsArray && (pItem=pPack->pContentsArray->Contents[nItem]))
+                    {
+                        if (bExact)
+                        {
+                            if (!stricmp(Name,GetItemFromContents(pItem)->Name))
+                            {
+                                Ret.Ptr=pItem;
+                                Ret.Type=pItemType;
+                                return true;
+                            }
+                        }
+                        else 
+                        {
+                            if(strstr(strlwr(strcpy(Temp,GetItemFromContents(pItem)->Name)),Name))
                             {
                                 Ret.Ptr=pItem;
                                 Ret.Type=pItemType;
@@ -855,11 +921,11 @@ TLO(dataFindItem)
 
     for (unsigned long nSlot=0 ; nSlot < NUM_INV_SLOTS ; nSlot++)
     {
-        if (PCONTENTS pItem=GetCharInfo2()->InventoryArray[nSlot])
+        if (PCONTENTS pItem=GetCharInfo2()->pInventoryArray->InventoryArray[nSlot])
         {
             if (bExact)
             {
-                if (!stricmp(Name,pItem->Item->Name))
+                if (!stricmp(Name,GetItemFromContents(pItem)->Name))
                 {
                     Ret.Ptr=pItem;
                     Ret.Type=pItemType;
@@ -868,7 +934,7 @@ TLO(dataFindItem)
             }
             else 
             {
-                if(strstr(strlwr(strcpy(Temp,pItem->Item->Name)),Name))
+                if(strstr(strlwr(strcpy(Temp,GetItemFromContents(pItem)->Name)),Name))
                 {
                     Ret.Ptr=pItem;
                     Ret.Type=pItemType;
@@ -878,19 +944,19 @@ TLO(dataFindItem)
         }
     }
 
-    for (unsigned long nPack=0 ; nPack < 8 ; nPack++)
+    for (unsigned long nPack=0 ; nPack < 10 ; nPack++)
     {
-        if (PCONTENTS pPack=GetCharInfo2()->Inventory.Pack[nPack])
+        if (PCONTENTS pPack=GetCharInfo2()->pInventoryArray->Inventory.Pack[nPack])
         {
-            if (pPack->Item->Type==ITEMTYPE_PACK)
+            if (GetItemFromContents(pPack)->Type==ITEMTYPE_PACK && pPack->pContentsArray)
             {
-                for (unsigned long nItem=0 ; nItem < pPack->Item->Slots ; nItem++)
+                for (unsigned long nItem=0 ; nItem < GetItemFromContents(pPack)->Slots ; nItem++)
                 {
-                    if (PCONTENTS pItem=pPack->Contents[nItem])
+                    if (PCONTENTS pItem=pPack->pContentsArray->Contents[nItem])
                     {
                         if (bExact)
                         {
-                            if (!stricmp(Name,pItem->Item->Name))
+                            if (!stricmp(Name,GetItemFromContents(pItem)->Name))
                             {
                                 Ret.Ptr=pItem;
                                 Ret.Type=pItemType;
@@ -899,7 +965,7 @@ TLO(dataFindItem)
                         }
                         else 
                         {
-                            if(strstr(strlwr(strcpy(Temp,pItem->Item->Name)),Name))
+                            if(strstr(strlwr(strcpy(Temp,GetItemFromContents(pItem)->Name)),Name))
                             {
                                 Ret.Ptr=pItem;
                                 Ret.Type=pItemType;
@@ -938,13 +1004,13 @@ TLO(dataFindItemCount)
 
     for (unsigned long nSlot=0 ; nSlot < NUM_INV_SLOTS ; nSlot++)
     {
-        if (PCONTENTS pItem=GetCharInfo2()->InventoryArray[nSlot])
+        if (PCONTENTS pItem=GetCharInfo2()->pInventoryArray->InventoryArray[nSlot])
         {
             if (bExact)
             {
-                if (!stricmp(Name,pItem->Item->Name))
+                if (!stricmp(Name,GetItemFromContents(pItem)->Name))
                 {
-                    if ((pItem->Item->Type != ITEMTYPE_NORMAL) ||
+                    if ((GetItemFromContents(pItem)->Type != ITEMTYPE_NORMAL) ||
                         (((EQ_Item*)pItem)->IsStackable() != 1)) 
                         Count++;
                     else
@@ -952,19 +1018,20 @@ TLO(dataFindItemCount)
                 }
                 else // for augs
                 {
-                    for(nAug = 0; nAug < 0xa; nAug++)
+                    if (pItem->pContentsArray && pItem->NumOfSlots2)
+                    for(nAug = 0; nAug < pItem->NumOfSlots2; nAug++)
                     {
-                        if(pItem->Contents[nAug] && pItem->Contents[nAug]->Item->Type == ITEMTYPE_NORMAL && pItem->Contents[nAug]->Item->AugType &&
-                            !stricmp(Name, pItem->Contents[nAug]->Item->Name))
+                        if(pItem->pContentsArray->Contents[nAug] && GetItemFromContents(pItem->pContentsArray->Contents[nAug])->Type == ITEMTYPE_NORMAL && GetItemFromContents(pItem->pContentsArray->Contents[nAug])->AugType &&
+                            !stricmp(Name, GetItemFromContents(pItem->pContentsArray->Contents[nAug])->Name))
                             Count++;
                     }
                 }
             }
             else 
             {
-                if(strstr(strlwr(strcpy(Temp,pItem->Item->Name)),Name))
+                if(strstr(strlwr(strcpy(Temp,GetItemFromContents(pItem)->Name)),Name))
                 {
-                    if ((pItem->Item->Type != ITEMTYPE_NORMAL) ||
+                    if ((GetItemFromContents(pItem)->Type != ITEMTYPE_NORMAL) ||
                         (((EQ_Item*)pItem)->IsStackable() != 1)) 
                         Count++;
                     else
@@ -972,10 +1039,11 @@ TLO(dataFindItemCount)
                 }
                 else // for augs
                 {
-                    for(nAug = 0; nAug < 0xa; nAug++)
+                    if (pItem->pContentsArray && pItem->NumOfSlots2 )
+                    for(nAug = 0; nAug < pItem->NumOfSlots2; nAug++)
                     {
-                        if(pItem->Contents[nAug] && pItem->Contents[nAug]->Item->Type == ITEMTYPE_NORMAL && pItem->Contents[nAug]->Item->AugType &&
-                            strstr(strlwr(strcpy(Temp, pItem->Contents[nAug]->Item->Name)), Name))
+                        if(pItem->pContentsArray->Contents[nAug] && GetItemFromContents(pItem->pContentsArray->Contents[nAug])->Type == ITEMTYPE_NORMAL && GetItemFromContents(pItem->pContentsArray->Contents[nAug])->AugType &&
+                            strstr(strlwr(strcpy(Temp, GetItemFromContents(pItem->pContentsArray->Contents[nAug])->Name)), Name))
                             Count++;
                     }
                 }
@@ -983,21 +1051,21 @@ TLO(dataFindItemCount)
         }
     }
 
-    for (unsigned long nPack=0 ; nPack < 8 ; nPack++)
+    for (unsigned long nPack=0 ; nPack < 10 ; nPack++)
     {
-        if (PCONTENTS pPack=GetCharInfo2()->Inventory.Pack[nPack])
+        if (PCONTENTS pPack=GetCharInfo2()->pInventoryArray->Inventory.Pack[nPack])
         {
-            if (pPack->Item->Type==ITEMTYPE_PACK)
+            if (GetItemFromContents(pPack)->Type==ITEMTYPE_PACK && pPack->pContentsArray)
             {
-                for (unsigned long nItem=0 ; nItem < pPack->Item->Slots ; nItem++)
+                for (unsigned long nItem=0 ; nItem < GetItemFromContents(pPack)->Slots ; nItem++)
                 {
-                    if (PCONTENTS pItem=pPack->Contents[nItem])
+                    if (PCONTENTS pItem=pPack->pContentsArray->Contents[nItem])
                     {
                         if (bExact)
                         {
-                            if (!stricmp(Name,pItem->Item->Name))
+                            if (!stricmp(Name,GetItemFromContents(pItem)->Name))
                             {
-                                if ((pItem->Item->Type != ITEMTYPE_NORMAL) ||
+                                if ((GetItemFromContents(pItem)->Type != ITEMTYPE_NORMAL) ||
                                     (((EQ_Item*)pItem)->IsStackable() != 1)) 
                                     Count++;
                                 else
@@ -1005,19 +1073,20 @@ TLO(dataFindItemCount)
                             }
                             else // for augs
                             {
-                                for(nAug = 0; nAug < 0xa; nAug++)
+                                if (pItem->pContentsArray && pItem->NumOfSlots2)
+                                for(nAug = 0; nAug < pItem->NumOfSlots2; nAug++)
                                 {
-                                    if(pItem->Contents[nAug] && pItem->Contents[nAug]->Item->Type == ITEMTYPE_NORMAL && pItem->Contents[nAug]->Item->AugType &&
-                                        !stricmp(Name, pItem->Contents[nAug]->Item->Name))
+                                    if(pItem->pContentsArray->Contents[nAug] && GetItemFromContents(pItem->pContentsArray->Contents[nAug])->Type == ITEMTYPE_NORMAL && GetItemFromContents(pItem->pContentsArray->Contents[nAug])->AugType &&
+                                        !stricmp(Name, GetItemFromContents(pItem->pContentsArray->Contents[nAug])->Name))
                                         Count++;
                                 }
                             }
                         }
                         else 
                         {
-                            if(strstr(strlwr(strcpy(Temp,pItem->Item->Name)),Name))
+                            if(strstr(strlwr(strcpy(Temp,GetItemFromContents(pItem)->Name)),Name))
                             {
-                                if ((pItem->Item->Type != ITEMTYPE_NORMAL) ||
+                                if ((GetItemFromContents(pItem)->Type != ITEMTYPE_NORMAL) ||
                                     (((EQ_Item*)pItem)->IsStackable() != 1)) 
                                     Count++;
                                 else
@@ -1025,10 +1094,11 @@ TLO(dataFindItemCount)
                             }
                             else // for augs
                             {
-                                for(nAug = 0; nAug < 0xa; nAug++)
+                                if (pItem->pContentsArray && pItem->NumOfSlots2)
+                                for(nAug = 0; nAug < pItem->NumOfSlots2; nAug++)
                                 {
-                                    if(pItem->Contents[nAug] && pItem->Contents[nAug]->Item->Type == ITEMTYPE_NORMAL && pItem->Contents[nAug]->Item->AugType &&
-                                        strstr(strlwr(strcpy(Temp, pItem->Contents[nAug]->Item->Name)), Name))
+                                    if(pItem->pContentsArray->Contents[nAug] && GetItemFromContents(pItem->pContentsArray->Contents[nAug])->Type == ITEMTYPE_NORMAL && GetItemFromContents(pItem->pContentsArray->Contents[nAug])->AugType &&
+                                        strstr(strlwr(strcpy(Temp, GetItemFromContents(pItem->pContentsArray->Contents[nAug])->Name)), Name))
                                         Count++;
                                 }
                             }
@@ -1064,17 +1134,18 @@ TLO(dataFindItemBankCount)
     PCHARINFO pCharInfo=GetCharInfo();
 
     unsigned long Count=0;
+    unsigned long nPack=0;
 
-    for (unsigned long nPack=0 ; nPack < NUM_BANK_SLOTS ; nPack++)
+    for (nPack=0 ; nPack < NUM_BANK_SLOTS ; nPack++)
     {
         PCHARINFO pCharInfo=GetCharInfo();
-        if (PCONTENTS pPack=pCharInfo->Bank[nPack])
+        if (PCONTENTS pPack=pCharInfo->pBankArray->Bank[nPack])
         {
             if (bExact)
             {
-                if (!stricmp(Name,pPack->Item->Name))
+                if (!stricmp(Name,GetItemFromContents(pPack)->Name))
                 {
-                    if ((pPack->Item->Type != ITEMTYPE_NORMAL) ||
+                    if ((GetItemFromContents(pPack)->Type != ITEMTYPE_NORMAL) ||
                         (((EQ_Item*)pPack)->IsStackable() != 1))
                         Count++;
                     else
@@ -1083,26 +1154,26 @@ TLO(dataFindItemBankCount)
             }
             else 
             {
-                if(strstr(strlwr(strcpy(Temp,pPack->Item->Name)),Name))
+                if(strstr(strlwr(strcpy(Temp,GetItemFromContents(pPack)->Name)),Name))
                 {
-                    if ((pPack->Item->Type != ITEMTYPE_NORMAL) ||
+                    if ((GetItemFromContents(pPack)->Type != ITEMTYPE_NORMAL) ||
                         (((EQ_Item*)pPack)->IsStackable() != 1))
                         Count++;
                     else
                         Count+=pPack->StackCount;
                 }
             }
-            if (pPack->Item->Type==ITEMTYPE_PACK)
+            if (GetItemFromContents(pPack)->Type==ITEMTYPE_PACK && pPack->pContentsArray)
             {
-                for (unsigned long nItem=0 ; nItem < pPack->Item->Slots ; nItem++)
+                for (unsigned long nItem=0 ; nItem < GetItemFromContents(pPack)->Slots ; nItem++)
                 {
-                    if (PCONTENTS pItem=pPack->Contents[nItem])
+                    if (PCONTENTS pItem=pPack->pContentsArray->Contents[nItem])
                     {
                         if (bExact)
                         {
-                            if (!stricmp(Name,pItem->Item->Name))
+                            if (!stricmp(Name,GetItemFromContents(pItem)->Name))
                             {
-                                if ((pItem->Item->Type != ITEMTYPE_NORMAL) ||
+                                if ((GetItemFromContents(pItem)->Type != ITEMTYPE_NORMAL) ||
                                     (((EQ_Item*)pItem)->IsStackable() != 1))
                                     Count++;
                                 else
@@ -1111,9 +1182,69 @@ TLO(dataFindItemBankCount)
                         }
                         else 
                         {
-                            if(strstr(strlwr(strcpy(Temp,pItem->Item->Name)),Name))
+                            if(strstr(strlwr(strcpy(Temp,GetItemFromContents(pItem)->Name)),Name))
                             {
-                                if ((pItem->Item->Type != ITEMTYPE_NORMAL) ||
+                                if ((GetItemFromContents(pItem)->Type != ITEMTYPE_NORMAL) ||
+                                    (((EQ_Item*)pItem)->IsStackable() != 1))
+                                    Count++;
+                                else
+                                    Count+=pItem->StackCount;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    for (nPack=0 ; nPack < NUM_SHAREDBANK_SLOTS ; nPack++)
+    {
+        PCHARINFO pCharInfo=GetCharInfo();
+        if (PCONTENTS pPack=pCharInfo->pSharedBankArray->SharedBank[nPack])
+        {
+            if (bExact)
+            {
+                if (!stricmp(Name,GetItemFromContents(pPack)->Name))
+                {
+                    if ((GetItemFromContents(pPack)->Type != ITEMTYPE_NORMAL) ||
+                        (((EQ_Item*)pPack)->IsStackable() != 1))
+                        Count++;
+                    else
+                        Count+=pPack->StackCount;
+                }
+            }
+            else 
+            {
+                if(strstr(strlwr(strcpy(Temp,GetItemFromContents(pPack)->Name)),Name))
+                {
+                    if ((GetItemFromContents(pPack)->Type != ITEMTYPE_NORMAL) ||
+                        (((EQ_Item*)pPack)->IsStackable() != 1))
+                        Count++;
+                    else
+                        Count+=pPack->StackCount;
+                }
+            }
+            if (GetItemFromContents(pPack)->Type==ITEMTYPE_PACK && pPack->pContentsArray)
+            {
+                for (unsigned long nItem=0 ; nItem < GetItemFromContents(pPack)->Slots ; nItem++)
+                {
+                    if (PCONTENTS pItem=pPack->pContentsArray->Contents[nItem])
+                    {
+                        if (bExact)
+                        {
+                            if (!stricmp(Name,GetItemFromContents(pItem)->Name))
+                            {
+                                if ((GetItemFromContents(pItem)->Type != ITEMTYPE_NORMAL) ||
+                                    (((EQ_Item*)pItem)->IsStackable() != 1))
+                                    Count++;
+                                else
+                                    Count+=pItem->StackCount;
+                            }
+                        }
+                        else 
+                        {
+                            if(strstr(strlwr(strcpy(Temp,GetItemFromContents(pItem)->Name)),Name))
+                            {
+                                if ((GetItemFromContents(pItem)->Type != ITEMTYPE_NORMAL) ||
                                     (((EQ_Item*)pItem)->IsStackable() != 1))
                                     Count++;
                                 else

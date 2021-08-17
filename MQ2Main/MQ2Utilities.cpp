@@ -766,6 +766,10 @@ PCHAR ConvertHotkeyNameToKeyName(PCHAR szName)
 PCHAR GetFullZone(DWORD ZoneID)
 {
     if (!ppWorldData | !pWorldData) return NULL;
+    if(ZoneID > MAX_ZONES)
+        ZoneID &= 0x7FFF;
+    if(ZoneID > MAX_ZONES || ZoneID <= 0)
+        return "UNKNOWN_ZONE";
     PZONELIST pZone = ((PWORLDDATA)pWorldData)->ZoneArray[ZoneID];
     return pZone->LongName;
 }
@@ -776,6 +780,10 @@ PCHAR GetFullZone(DWORD ZoneID)
 PCHAR GetShortZone(DWORD ZoneID)
 {
     if (!ppWorldData | !pWorldData) return NULL;
+    if(ZoneID > MAX_ZONES)
+        ZoneID &= 0x7FFF;
+    if(ZoneID > MAX_ZONES || ZoneID <= 0)
+        return "UNKNOWN_ZONE";
     PZONELIST pZone = ((PWORLDDATA)pWorldData)->ZoneArray[ZoneID];
     return pZone->ShortName; 
 }
@@ -788,7 +796,7 @@ DWORD GetZoneID(PCHAR ZoneShortName)
 {
     PZONELIST pZone = NULL;
     if (!ppWorldData | !pWorldData) return -1;
-    for (int nIndex=0; nIndex < MAX_ZONES+1; nIndex++) {
+    for (int nIndex=0; nIndex <= MAX_ZONES; nIndex++) {
         pZone = ((PWORLDDATA)pWorldData)->ZoneArray[nIndex];
         if(pZone )
             if (!_stricmp(pZone->ShortName,ZoneShortName)) {
@@ -929,6 +937,8 @@ DWORD GetSpellDuration(PSPELL pSpell, PSPAWNINFO pSpawn)
                     return min(unsigned int(pSpawn->Level) * 2 + 10, pSpell->DurationValue1); 
                 case 10:        
                     return min(unsigned int(pSpawn->Level) * 3 + 10, pSpell->DurationValue1); 
+                case 13:
+                    return pSpell->DurationValue1 * 6 / 10;
                 case 50: 
                     return 0xFFFFFFFF; 
                 case 3600: 
@@ -985,12 +995,21 @@ PCHAR GetGuildByID(DWORD GuildID)
 
 DWORD GetGuildIDByName(PCHAR szGuild)
 {
-    for(DWORD n = 0; n < pGuildList->HashValue - 1; n++)
-    {
-        if(PGUILD pGuild = pGuildList->GuildList[n])
-        {
-            while (pGuild)
-            {
+    DWORD n;
+    for(n = 0; n < pGuildList->HashValue - 1; n++) {
+        if(PGUILD pGuild = pGuildList->GuildList[n]) {
+            while (pGuild) {
+                if(!stricmp(pGuild->pGuildData->Name, szGuild))
+                    return pGuild->ID;
+
+                pGuild = pGuild->pNext;
+            }
+        }
+    }
+
+    for(n = 0; n < pGuildList->HashValue - 1; n++) {
+        if(PGUILD pGuild = pGuildList->GuildList[n]) {
+            while (pGuild) {
                 if(!strnicmp(pGuild->pGuildData->Name, szGuild, strlen(szGuild)))
                     return pGuild->ID;
 
@@ -1106,14 +1125,14 @@ FLOAT FindSpeed(PSPAWNINFO pSpawn)
 
 VOID GetItemLinkHash(PCONTENTS Item, PCHAR Buffer)
 {
-    ((EQ_Item*)Item)->GetItemLinkHash(Buffer, 256);
+    ((EQ_Item*)Item)->CreateItemTagString(Buffer, 256);
 }
 
 VOID GetItemLink(PCONTENTS Item, PCHAR Buffer)
 {
     char hash[256];
-    ((EQ_Item*)Item)->GetItemLinkHash(hash, 256);
-    sprintf(Buffer,"%c0%s%s%c",0x12,hash,Item->Item->Name,0x12);
+    ((EQ_Item*)Item)->CreateItemTagString(hash, 256);
+    sprintf(Buffer,"%c0%s%s%c",0x12,hash,GetItemFromContents(Item)->Name,0x12);
     DebugSpew("GetItemLink() returns '%s'",&Buffer[0]);
 }
 
@@ -1189,22 +1208,22 @@ VOID ClearSearchItem(SEARCHITEM &SearchItem)
 
 BOOL ItemMatchesSearch(SEARCHITEM &SearchItem, PCONTENTS pContents)
 {
-    if (SearchItem.ID && pContents->Item->ItemNumber!=SearchItem.ID)
+    if (SearchItem.ID && GetItemFromContents(pContents)->ItemNumber!=SearchItem.ID)
         return false;
-    RequireFlag(Lore,pContents->Item->Lore);
-    RequireFlag(NoRent,pContents->Item->NoRent);
-    RequireFlag(NoDrop,pContents->Item->NoDrop);
-    RequireFlag(Magic,pContents->Item->Magic);
-    RequireFlag(Pack,pContents->Item->Type==ITEMTYPE_PACK);
-    RequireFlag(Book,pContents->Item->Type==ITEMTYPE_BOOK);
-    RequireFlag(Combinable,pContents->Item->ItemType==17);
-    RequireFlag(Summoned,pContents->Item->Summoned);
-    RequireFlag(Instrument,pContents->Item->InstrumentType);
-    RequireFlag(Weapon,pContents->Item->Damage && pContents->Item->Delay);
-    RequireFlag(Normal,pContents->Item->Type==ITEMTYPE_NORMAL);
+    RequireFlag(Lore,GetItemFromContents(pContents)->Lore);
+    RequireFlag(NoRent,GetItemFromContents(pContents)->NoRent);
+    RequireFlag(NoDrop,GetItemFromContents(pContents)->NoDrop);
+    RequireFlag(Magic,GetItemFromContents(pContents)->Magic);
+    RequireFlag(Pack,GetItemFromContents(pContents)->Type==ITEMTYPE_PACK);
+    RequireFlag(Book,GetItemFromContents(pContents)->Type==ITEMTYPE_BOOK);
+    RequireFlag(Combinable,GetItemFromContents(pContents)->ItemType==17);
+    RequireFlag(Summoned,GetItemFromContents(pContents)->Summoned);
+    RequireFlag(Instrument,GetItemFromContents(pContents)->InstrumentType);
+    RequireFlag(Weapon,GetItemFromContents(pContents)->Damage && GetItemFromContents(pContents)->Delay);
+    RequireFlag(Normal,GetItemFromContents(pContents)->Type==ITEMTYPE_NORMAL);
 
     CHAR szName[MAX_STRING] = {0};
-    if (SearchItem.szName[0] && !strstr(_strlwr(strcpy(szName,pContents->Item->Name)),SearchItem.szName))
+    if (SearchItem.szName[0] && !strstr(_strlwr(strcpy(szName,GetItemFromContents(pContents)->Name)),SearchItem.szName))
         return FALSE;
 
     return true;
@@ -1226,7 +1245,7 @@ BOOL SearchThroughItems(SEARCHITEM &SearchItem, PCONTENTS* pResult, DWORD *nResu
         // iterate through worn items
         for (unsigned long N = 0 ; N < 21 ; N++)
         {
-            if (PCONTENTS pContents=GetCharInfo2()->InventoryArray[N])
+            if (PCONTENTS pContents=GetCharInfo2()->pInventoryArray->InventoryArray[N])
                 if (ItemMatchesSearch(SearchItem,pContents))
                     Result(pContents,N);
         }
@@ -1236,22 +1255,22 @@ BOOL SearchThroughItems(SEARCHITEM &SearchItem, PCONTENTS* pResult, DWORD *nResu
     {
         unsigned long nPack;
         // iterate through inventory slots before in-pack slots
-        for (nPack = 0 ; nPack<8 ; nPack++)
+        for (nPack = 0 ; nPack<10 ; nPack++)
         {
-            if (PCONTENTS pContents=GetCharInfo2()->Inventory.Pack[nPack])
+            if (PCONTENTS pContents=GetCharInfo2()->pInventoryArray->Inventory.Pack[nPack])
             {
                 if (ItemMatchesSearch(SearchItem,pContents))
                     Result(pContents,nPack+21);
             }
         }
-        for (nPack = 0 ; nPack<8 ; nPack++)
+        for (nPack = 0 ; nPack<10 ; nPack++)
         {
-            if (PCONTENTS pContents=GetCharInfo2()->Inventory.Pack[nPack])
-                if (pContents->Item->ItemType==ITEMTYPE_PACK)
+            if (PCONTENTS pContents=GetCharInfo2()->pInventoryArray->Inventory.Pack[nPack])
+                if (GetItemFromContents(pContents)->ItemType==ITEMTYPE_PACK && pContents->pContentsArray)
                 {
-                    for (unsigned long nItem = 0 ; nItem<pContents->Item->Slots ; nItem++)
+                    for (unsigned long nItem = 0 ; nItem<GetItemFromContents(pContents)->Slots ; nItem++)
                     {
-                        if (PCONTENTS pItem=pContents->Contents[nItem])
+                        if (PCONTENTS pItem=pContents->pContentsArray->Contents[nItem])
                             if (ItemMatchesSearch(SearchItem,pItem))
                                 Result(pItem,nPack*100+nItem);
                     }
@@ -1270,7 +1289,7 @@ VOID ClearSearchSpawn(PSEARCHSPAWN pSearchSpawn)
     if (!pSearchSpawn) return;
     ZeroMemory(pSearchSpawn,sizeof(SEARCHSPAWN));
     // 0? fine. set anything thats NOT zero.
-    pSearchSpawn->MaxLevel = 100;
+    pSearchSpawn->MaxLevel = MAX_NPC_LEVEL;
     pSearchSpawn->SpawnType = NONE;
     pSearchSpawn->GuildID = 0xFFFF;
     pSearchSpawn->ZRadius = 10000.0f;
@@ -2859,6 +2878,8 @@ int FindMappableCommand(const char *name)
 {
     for (unsigned long i = 0 ; i < nEQMappableCommands ; i++)
     {
+        if((DWORD)szEQMappableCommands[i] == 0 || (DWORD)szEQMappableCommands[i] > (DWORD)__AC1_Data)
+            continue;
         if (!stricmp(name,szEQMappableCommands[i]))
             return i;
     }
@@ -3012,34 +3033,78 @@ havecfgfile:
 #ifndef ISXEQ_LEGACY
 int FindInvSlotForContents(PCONTENTS pContents)
 {
-    DebugSpew("FindInvSlotForContents(0x%08X) (0x%08X)",pContents,pContents->Item);
+    int LastMatch = -1;
+
+    // screw the old style InvSlot numbers
+    // return the index into the INVSLOTMGR array
+    DebugSpew("FindInvSlotForContents(0x%08X) (0x%08X)",pContents,GetItemFromContents(pContents));
+
+#if 1
     PEQINVSLOTMGR pInvMgr=(PEQINVSLOTMGR)pInvSlotMgr;
-    for (unsigned long N = 0 ; N < 0x400 ; N++)
+    for (unsigned long N = 0 ; N < 0x800 ; N++)
     {
-        if (pInvMgr->SlotArray[N] && pInvMgr->SlotArray[N]->ppContents)
-        {
-            //DebugSpew("pInvSlotMgr->SlotArray[%d]->pContents==0x%08X",N,*pInvMgr->SlotArray[N]->ppContents);
-            if (*pInvMgr->SlotArray[N]->ppContents==pContents)
-            {
-                if (pInvMgr->SlotArray[N]->pInvSlotWnd && pInvMgr->SlotArray[N]->pInvSlotWnd->InvSlot>=0)
-                    return pInvMgr->SlotArray[N]->pInvSlotWnd->InvSlot; 
-                break;
+        class CInvSlot *pCIS = NULL;
+        struct _CONTENTS *pC = NULL;
+
+        if (pInvMgr->SlotArray[N]) {
+            pCIS = (class CInvSlot *)pInvMgr->SlotArray[N];
+
+            pCIS->GetItemBase(&pC);
+
+            if (pC) {
+                DebugSpew("pInvSlotMgr->SlotArray[%d] Contents==0x%08X",N,pC);
+                if (pC==pContents) {
+
+if (pInvMgr->SlotArray[N]->pInvSlotWnd) {
+DebugSpew("%d slot %d wnd %d %d %d", N, pInvMgr->SlotArray[N]->InvSlot, 
+    pInvMgr->SlotArray[N]->pInvSlotWnd->WindowType,
+    pInvMgr->SlotArray[N]->pInvSlotWnd->InvSlotForBag,
+    pInvMgr->SlotArray[N]->pInvSlotWnd->BagSlot
+    );
+}
+                    // if it is in the primary inventory,
+                    // then pInvSlotWnd->WindowType is 0
+                    if (pInvMgr->SlotArray[N]->pInvSlotWnd && pInvMgr->SlotArray[N]->pInvSlotWnd->WindowType == 0) {
+                        return pInvMgr->SlotArray[N]->InvSlot; 
+                    } else if (pInvMgr->SlotArray[N]->pInvSlotWnd && pInvMgr->SlotArray[N]->pInvSlotWnd->BagSlot!=65535) {
+                        return pInvMgr->SlotArray[N]->InvSlot; 
+                    } else if (pInvMgr->SlotArray[N]->pInvSlotWnd && pInvMgr->SlotArray[N]->pInvSlotWnd->WindowType==11) {
+                        // loot window items should not be anywhere else
+                        return pInvMgr->SlotArray[N]->InvSlot; 
+                    } else {
+                        LastMatch = N;
+                    }
+                }
             }
+        }
+    }
+    // return specific window type if needed
+    if (LastMatch != -1 && pInvMgr->SlotArray[LastMatch]->pInvSlotWnd->WindowType== 9999)
+        return  pInvMgr->SlotArray[LastMatch]->InvSlot;
+#endif
+
+#if 0
+    for(DWORD n = 0; n < NUM_INV_SLOTS; n++)
+    {
+        if(GetCharInfo2()->pInventoryArray->InventoryArray[n] && GetCharInfo2()->pInventoryArray->InventoryArray[n] == pContents)
+        {
+            //DebugSpew("Found '%s' at %d", GetCharInfo2()->pInventoryArray->InventoryArray[n]->Item->Name, n);
+            return n;
         }
     }
 
     unsigned long nPack;
-    for (nPack=0 ; nPack < 8 ; nPack++)
+    for (nPack=0 ; nPack < 10 ; nPack++)
     {
         PCHARINFO pCharInfo=GetCharInfo();
-        if (PCONTENTS pPack=GetCharInfo2()->Inventory.Pack[nPack])
+        if (PCONTENTS pPack=GetCharInfo2()->pInventoryArray->Inventory.Pack[nPack])
         {
-            if (pPack->Item->Type==ITEMTYPE_PACK)
+            if (pPack->Item->Type==ITEMTYPE_PACK && pContents->pContentsArray)
             {
                 for (unsigned long nItem=0 ; nItem < pPack->Item->Slots ; nItem++)
                 {
-                    //DebugSpew("Pack[%d]->Contents[%d]==0x%08X",nPack,nItem,pPack->Contents[nItem]);
-                    if (pPack->Contents[nItem]==pContents)
+                    //DebugSpew("Pack[%d]->pContentsArray->Contents[%d]==0x%08X",nPack,nItem,pPack->pContentsArray->Contents[nItem]);
+                    if (pPack->pContentsArray->Contents[nItem]==pContents)
                     {
                         return 262+(nPack*10)+nItem;
                     }
@@ -3051,7 +3116,7 @@ int FindInvSlotForContents(PCONTENTS pContents)
     for (nPack=0 ; nPack < NUM_BANK_SLOTS ; nPack++)
     {
         PCHARINFO pCharInfo=GetCharInfo();
-        if (PCONTENTS pPack=pCharInfo->Bank[nPack])
+        if (PCONTENTS pPack=pCharInfo->pBankArray->Bank[nPack])
         {
             if (pPack==pContents)
             {
@@ -3059,11 +3124,11 @@ int FindInvSlotForContents(PCONTENTS pContents)
                     return 2000+nPack;
                 return 2500+nPack-0x10;
             }
-            if (pPack->Item->Type==ITEMTYPE_PACK)
+            if (pPack->Item->Type==ITEMTYPE_PACK && pContents->pContentsArray)
             {
                 for (unsigned long nItem=0 ; nItem < pPack->Item->Slots ; nItem++)
                 {
-                    if (pPack->Contents[nItem]==pContents)
+                    if (pPack->pContentsArray->Contents[nItem]==pContents)
                     {
                         if (nPack<0x18)
                             return 2032+(nPack*10)+nItem;
@@ -3073,6 +3138,7 @@ int FindInvSlotForContents(PCONTENTS pContents)
             }
         }        
     }
+#endif
 
     return -1;
 }
@@ -3084,33 +3150,38 @@ int FindInvSlot(PCHAR pName, BOOL Exact)
     CHAR Name[MAX_STRING]={0};
     strlwr(strcpy(Name,pName));
     CHAR szTemp[MAX_STRING]={0};
-
     PEQINVSLOTMGR pInvMgr=(PEQINVSLOTMGR)pInvSlotMgr;
-    for (unsigned long N = 0 ; N < 0x400 ; N++)
+    for (unsigned long N = 0 ; N < 0x800 ; N++)
     {
         if (pInvMgr->SlotArray[N])
         {
-            if (pInvMgr->SlotArray[N]->ppContents && *pInvMgr->SlotArray[N]->ppContents)
+            class CInvSlot *x = (class CInvSlot *)pInvMgr->SlotArray[N];
+            struct _CONTENTS *y = NULL;
+
+            if (x) 
+               x->GetItemBase(&y);
+
+            if (y)
             {
                 if (!Exact)
                 {
-                    _strlwr(strcpy(szTemp,(*pInvMgr->SlotArray[N]->ppContents)->Item->Name));
+                    _strlwr(strcpy(szTemp,GetItemFromContents(y)->Name));
                     if (strstr(szTemp,Name))
                     {
                         if (pInvMgr->SlotArray[N]->pInvSlotWnd)
                         {
                             LastFoundInvSlot=N;
-                            return pInvMgr->SlotArray[N]->pInvSlotWnd->InvSlot;
+                            return pInvMgr->SlotArray[N]->InvSlot;
                         }
                         // let it try to find it in an open slot if this fails
                     }
                 }
-                else if (!stricmp(Name,(*pInvMgr->SlotArray[N]->ppContents)->Item->Name))
+                else if (!stricmp(Name,GetItemFromContents(y)->Name))
                 {
                     if (pInvMgr->SlotArray[N]->pInvSlotWnd)
                     {
                         LastFoundInvSlot=N;
-                        return pInvMgr->SlotArray[N]->pInvSlotWnd->InvSlot;
+                        return pInvMgr->SlotArray[N]->InvSlot;
                     }
                     // let it try to find it in an open slot if this fails
                 }
@@ -3128,8 +3199,9 @@ int FindNextInvSlot(PCHAR pName, BOOL Exact)
     CHAR Name[MAX_STRING]={0};
     strlwr(strcpy(Name,pName));
 
+#if 0
     PEQINVSLOTMGR pInvMgr=(PEQINVSLOTMGR)pInvSlotMgr;
-    for (unsigned long N = LastFoundInvSlot+1 ; N < 0x400 ; N++)
+    for (unsigned long N = LastFoundInvSlot+1 ; N < 0x800 ; N++)
     {
         if (pInvMgr->SlotArray[N])
         {
@@ -3161,6 +3233,7 @@ int FindNextInvSlot(PCHAR pName, BOOL Exact)
             }
         }
     }
+#endif
     LastFoundInvSlot=-1;
     return -1;
 }
@@ -4205,8 +4278,6 @@ BOOL IsNamed(PSPAWNINFO pSpawn)
 {
     CHAR szTemp[MAX_STRING]={0};
 
-    if (!((PZONEINFO)pZoneInfo)->ZoneType)
-        return false;
     if (GetSpawnType(pSpawn) != NPC)
         return false;
     if (!IsTargetable(pSpawn))
@@ -5412,7 +5483,7 @@ VOID SuperWhoDisplay(PSPAWNINFO pChar, PSEARCHSPAWN pSearchSpawn, DWORD Color)
             pszSpawnType="flyer";
             break;
         }
-        WriteChatf("There %s \ag%d\ax %s%s in %s.",(TotalMatching == 1)?"is":"are",TotalMatching, pszSpawnType, (TotalMatching==1)?"":"s", GetFullZone(pChar->Zone));
+        WriteChatf("There %s \ag%d\ax %s%s in %s.",(TotalMatching == 1)?"is":"are",TotalMatching, pszSpawnType, (TotalMatching==1)?"":"s", GetFullZone(GetCharInfo()->zoneId));
     }
     else
     {
@@ -5598,7 +5669,7 @@ PCHAR GetLDoNTheme(DWORD LDTheme)
 
 DWORD GetItemTimer(PCONTENTS pItem)
 {
-    DWORD Timer=pPCData->GetItemTimerValue((EQ_Item*)pItem);
+    DWORD Timer=pPCData->GetItemTimerValue((EQ_Item*)&pItem);
     if(Timer<GetFastTime()) return 0;
     return Timer-GetFastTime();
 }
@@ -5613,9 +5684,10 @@ PCONTENTS GetItemContentsBySlotID(DWORD dwSlotID)
         SubSlot=(dwSlotID-262)%10; 
     } 
     if(InvSlot>=0 && InvSlot<NUM_INV_SLOTS) { 
-        if(PCONTENTS iSlot=GetCharInfo2()->InventoryArray[InvSlot]) { 
+        if(PCONTENTS iSlot=GetCharInfo2()->pInventoryArray->InventoryArray[InvSlot]) {
             if(SubSlot<0) return iSlot; 
-            if(PCONTENTS sSlot=GetCharInfo2()->InventoryArray[InvSlot]->Contents[SubSlot]) return sSlot; 
+            if(GetCharInfo2()->pInventoryArray->InventoryArray[InvSlot]->pContentsArray)
+            if(PCONTENTS sSlot=GetCharInfo2()->pInventoryArray->InventoryArray[InvSlot]->pContentsArray->Contents[SubSlot]) return sSlot; 
         } 
     } 
     return NULL; 
@@ -5624,15 +5696,15 @@ PCONTENTS GetItemContentsBySlotID(DWORD dwSlotID)
 PCONTENTS GetItemContentsByName(CHAR *ItemName)
 {
     for(unsigned long nSlot=0; nSlot<NUM_INV_SLOTS; nSlot++)
-        if(PCONTENTS pItem=GetCharInfo2()->InventoryArray[nSlot])
-            if(!strcmp(ItemName,pItem->Item->Name)) return pItem;
+        if(PCONTENTS pItem=GetCharInfo2()->pInventoryArray->InventoryArray[nSlot])
+            if(!strcmp(ItemName,GetItemFromContents(pItem)->Name)) return pItem;
 
-    for (unsigned long nPack=0 ; nPack < 8 ; nPack++)
-        if (PCONTENTS pPack=GetCharInfo2()->Inventory.Pack[nPack])
-            if (pPack->Item->Type==ITEMTYPE_PACK)
-                for (unsigned long nItem=0 ; nItem < pPack->Item->Slots ; nItem++)
-                    if (PCONTENTS pItem=pPack->Contents[nItem])
-                        if (!stricmp(ItemName,pItem->Item->Name)) return pItem;
+    for (unsigned long nPack=0 ; nPack < 10 ; nPack++)
+        if (PCONTENTS pPack=GetCharInfo2()->pInventoryArray->Inventory.Pack[nPack])
+            if (GetItemFromContents(pPack)->Type==ITEMTYPE_PACK && pPack->pContentsArray)
+                for (unsigned long nItem=0 ; nItem < GetItemFromContents(pPack)->Slots ; nItem++)
+                    if (PCONTENTS pItem=pPack->pContentsArray->Contents[nItem])
+                        if (!stricmp(ItemName,GetItemFromContents(pItem)->Name)) return pItem;
 
     return NULL; 
 }
@@ -5763,6 +5835,16 @@ float GetMeleeRange(class EQPlayer *pSpawn1,class EQPlayer *pSpawn2)
     return 14.0f;
 }
 
+DWORD GetSpellGemTimer(DWORD nGem)
+{
+    _EQCASTSPELLGEM *g = ((PEQCASTSPELLWINDOW)pCastSpellWnd)->SpellSlots[nGem];
+
+    if(g->TimeStamp)
+        return g->TimeStamp + g->RecastTime - EQGetTime();
+
+    return 0;
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Functions that were built into commands and people used DoCommand to execute                  //
 void AttackRanged(EQPlayer *pRangedTarget)
@@ -5833,6 +5915,22 @@ void UseAbility(char *sAbility) {
     return;
 }
 
+// Function to check if the account has a given expansion enabled.
+// Pass exansion macros from EQData.h to it -- e.g. HasExpansion(EXPANSION_RoF)
+bool HasExpansion(DWORD nExpansion)
+{
+    return (bool)((GetCharInfo()->ExpansionFlags & nExpansion) != 0);
+}
+
 //                                                                                               //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #endif
+
+namespace EQData 
+{
+
+EQLIB_API struct  _ITEMINFO *GetItemFromContents(struct _CONTENTS *c)
+{
+    return c->Item1 ? c->Item1 : c->Item2;
+}
+};

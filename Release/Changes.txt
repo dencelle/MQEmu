@@ -1,3 +1,285 @@
+17 May 2013 by EqMule, ieatacid
+- Updated for May 14th patch
+
+21 April 2013 by ieatacid
+- MQ2Map fixed
+
+21 April 2013 by ieatacid, EqMule
+- Updated for April 17th patch
+
+21 March 2013 by ieatacid
+- Fixed keybind issues (?)
+
+16 March 2013 by ieatacid
+- Updated for March 13th/14th patch
+
+16 February 2013 by ieatacid
+- Updated for Feb. 13th/14th patch
+
+20 January 2013 by ieatacid
+- Fixed _CXWND.pParentWindow crash
+- Fixed MQ2ItemDisplay crash
+
+19 January 2013 by ieatacid
+- Fixed MQ2ItemDisplay
+- Fix corpse crashes
+- Fixed a couple inventory struct members that were off -- item.stack and some others should work correctly now
+- Fixed Me.Pet
+
+18 January 2013 by ieatacid
+- Updated for January 16/17 patch
+
+4 January 2013 by ieatacid
+- Fixed _ITEMINFO.Clairvoyance
+- Fixed HasExpansion function
+
+24 December 2012 by ieatacid
+- MQ2ItemDisplay: fixed duplicate spell data being displayed
+
+13 December 2012 by ieatacid
+- Updated for December 12th patch
+- FIXED OLD COMPILER WARNINGS
+
+9 December 2012 by ieatacid
+- Added ability to check if your account has a specific expansion enabled
+... bool character.HaveExpansion[n]: Check if you have an expansion by number
+... bool character.HaveExpansion[name]: Check if you have an expansion by name (full name not abbreviation)
+... Added function for checking expansion availability. See HasExpansion function in MQ2Utilities.cpp for more info
+- Added access to aggro data
+... int character.PctAggro: Your aggro percentage
+... int character.SecondaryPctAggro: Secondary aggro percentage
+... spawn character.SecondaryAggroPlayer: spawninfo for secondary aggro player
+... spawn character.AggroLock: spawninfo for aggro lock player
+... int target.PctAggro: target's aggro percentage on you (same as character.PctAggro)
+... int target.SecondaryPctAggro: target's secondary aggro percent (same as character.SecondaryPctAggro)
+... spawn target.SecondaryAggroPlayer: spawninfo for target's secondary aggro player (same as character.SecondaryAggroPlayer)
+... int groupmember.PctAggro: group member's aggro percentage
+... int xtarget.PctAggro: xtarget's aggro percentage
+
+3 December 2012 by ieatacid
+- Fixed MQ2Bzsrch.  bazaaritem.Value has been removed because it's no longer sent with the item data
+
+29 November 2012 by ieatacid
+- Fixed alternate ability bug
+- Fixed Me.CombatState
+- MQ2Bzsrch is still broken, don't load it
+
+28 November 2012 by ieatacid
+- Updated for today's patch
+
+23 November 2012 by ieatacid
+- Fixed MQ2FPS (it once again stops rendering)
+
+15 November 2012 by ieatacid
+- Fixed custom chat channel join/leave messages not firing
+
+12 November 2012 by ieatacid
+- Fixed UI crashes
+
+10 November 2012 by ieatacid
+- Fixed alt ability bug
+
+9 November 2012 by ieatacid
+- Updated for November 7th patch
+- Due to the introduction of ASLR into the client, offset names in eqgame.h have been changed as it was the easiest route to take in adapting the code base
+- A function has been added to MQ2Inlines.h for plugins that need to adjust their own offsets for ASLR: DWORD FixOffset(DWORD nOffset);
+... It takes the offset as a parameter and returns the recalculated offset
+
+18 September 2012 by ieatacid
+- Updated for patch on the 16th
+
+25 September 2012 by ieatacid
+- Updated for patch
+
+19 September 2012 by ieatacid
+- Updated for patch
+
+16 August 2012 by ieatacid
+- Updated for patch
+
+19 July 2012 by dkaa, ieatacid
+- Updated for patch
+
+27 June 2012 by ieatacid
+- Updated for patch
+
+13 April 2012 by ieatacid
+- Updated for patch
+
+31a March 2012 by dkaa
+-- Fixed DeleteAll, which was crashing MQ2Tracking...
+
+31 March 2012 by dkaa
+-- Fixed MyTradeReady, etc
+-- Fixed various window crashes
+-- Broke all the plugins that create their own window.  While consolidating some code, I ran into the problem that Show is both member data and function.  Do the data member changed to dShow, which means plugins like MQ2BagWnd have to change too.
+
+23 March 2012 by ieatacid, dkaa
+- Updated for March 22nd patch
+- Added mapfilter TargetPath
+... when enabled, right-clicking a spawn on the map will make it your target and draw a path to it on the map and in the world
+... off by default
+
+03 February 2012 by dkaa
+- Kill launchpad if we are injected.  Launchpad is snooping into all processes.
+
+15 January 2012 by dkaa
+- Updated to fix /lootall
+
+17 December 2011 by ieatacid
+- Updated for today's patch
+
+15 December 2011 by ieatacid
+- Fixed spell manager crash
+
+14 December 2011 by ieatacid
+- Updated for today's patch
+
+23 November 2011 by ieatacid
+- Fixed _EQINVSLOTWND struct
+- Added Me.GemTimer to retrieve the refresh time on spell gems, returns ticks type
+
+18 November 2011 by ieatacid
+- Updated for November 15th patch
+
+11 October 2011 by ieatacid
+- Fixed Me.TributeTimer
+
+15 September 2011 by ieatacid
+- Updated for today's patch
+
+19 August 2011 by ieatacid
+- Fixed some campfire stuff
+
+30 June 2011 by ieatacid, dkaa
+- Updated for today's patch
+
+28 April 2011 by dkaa
+- updated for the patch
+
+20 April 2011 by dkaa
+- fix for XTarget -- thanks, drkrain
+
+19 April 2011 by dkaa
+- added Me.SkillCap
+
+14 April 2011 by ieatacid
+- Updated for April 13th patch
+
+6 April 2011 by ieatacid
+- Added Me.MercenaryStance -- returns current active mercenary stance as a string, default is NULL
+
+23 March 2011 by dkaa
+- Fixed GetSTMLText -- you need the new eqbcs
+- Fixed SetSTMLText -- you need the new eqbcs
+- Fixed AppendSTMLText -- you need the new eqbcs
+- Added a constant for the chat font offset so the /bcfont will work again
+- Added the class CXStr &  CXStr::operator=(class CXStr const &) offset.
+- This is all brainiac's fault.
+
+17 March 2011 by dkaa
+-  Jaysus, a patch on Paddy's day.
+
+9 March 2011 by ieatacid
+- Updated for today's patch
+
+5 March 2011 by dkaa
+- Fixed window.Enabled
+
+19 February 2011 by ieatacid
+- Me.Aura now returns the effect name as a string instead of a spell type.  If you need access to the spell data, look it up using the Spell TLO
+
+17 February 2011 by ieatacid
+- Updated for today's patch
+
+15 February 2011 by dkaa
+- fixed NoDrop again
+
+13 February 2011 by ieatacid
+- Fixed item.NoDrop
+- Me.Aura now returns the name of the effect in the aura window if it can't find the matching spell
+- _FELLOWSHIPINFO fix (thanks, Drakhhen)
+- Fixed CListWnd::DeleteAll function offset (thanks, brainiac)
+
+12 February 2011 by ieatacid, dkaa
+- Updated for February 9th and 11th patches
+
+16 January 2011 by dkaa
+- Fixed IsNamed for some of the newer zone.  Thanks, el_nene.
+
+16 January 2011 by ieatacid
+- Fixed spawn.Levitate
+- Fixed Me.FreeInventory
+
+13 January 2011 by ieatacid
+- Updated for today's patch
+
+8 December 2010 by ieatacid
+- Updated for today's patch
+
+7 December 2010 by ieatacid
+- Fixed "/click left" crash
+
+4 December 2010 by ieatacid
+- Added Me.Haste which reports total haste as it appears in the stats tab of the inventory window
+- Changed EQ_Character::DoCombatAbility to return bool instead of void, as it is in the client
+
+16 November 2010 by ieatacid
+- Fixed for Me.FreeInventory
+
+10 November 2010 by ieatacid
+- Updated for today's patch
+
+9 November 2010 by ieatacid
+- Fixed /lootall crash
+
+5 November 2010 by dkaa
+- Fixed RightClickedOnPlayer
+- Fixed item.Stacks, item.FreeStacks, and item.StackCount
+
+1 November 2010 by ieatacid
+- Fixed GetFullZone and GetShortZone crashes
+
+29 October 2010 by dkaa
+- Fixed SelectedItem and some crashes
+
+26 October 2010 by ieatacid
+- Updated for today's patch
+
+23 October 2010 by dkaa
+- Fixed the loot window and looting
+
+22 October 2010 by dkaa
+- Fixed the VC6 compile issue.
+- Fixed some crashes.
+- Fixed FindItem so it returns the correct slot.
+
+21 October 2010 by ieatacid, dkaa
+- Updated for today's patch
+- Bug fixes and code changes for the October 16th patch
+
+16 October 2010 by ieatacid, dkaa
+- Updated for October 12th patch
+
+15 September 2010 by ieatacid, dkaa
+- Updated for today's patch
+
+8 September 2010 by ieatacid, dkaa
+- Updated for today's patch
+
+18 August 2010 by ieatacid
+- Updated for today's patch
+
+29 July 2010 by dkaa
+- Fixed a problem with Dar.  Thanks, Minymezz
+
+28 July 2010 by ieatacid
+- Updated for today's patch
+- Adjusted /doability to look for your abilities in a similar way the client does, further eliminating it relying on abilities being mapped to action window buttons
+
+14 July 2010 by ieatacid, dkaa
+- Updated for today's patch
+
 9 June 2010 by ieatacid
 - Updated for today's patch
 

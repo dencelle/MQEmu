@@ -89,7 +89,7 @@ public:
                         ircout(buff); 
                     } 
 
-                    //               OutputBox->AppendSTML(&Whatever,szBuffer); 
+                    //               OutputBox->AppendSTML(szBuffer); 
                     //               DebugSpew("%s",szBuffer); 
                     SetCXStr(&InputBox->InputText,""); 
                     //               DoCommand((PSPAWNINFO)pCharSpawn,szBuffer); 
@@ -109,7 +109,7 @@ public:
         { 
             if (Message==XWM_CLOSE) 
             { 
-                Show=1; 
+                dShow=1; 
                 return 0; 
                 //MyWnd=0; 
             } 
@@ -142,7 +142,7 @@ void ircout(char *text) {
         strcat(processed,"<br>"); 
         CXStr NewText(processed); 
         CXSize Whatever; 
-        (MyWnd->StmlOut)->AppendSTML(&Whatever,NewText); 
+        (MyWnd->StmlOut)->AppendSTML(NewText); 
         (MyWnd->OutWnd)->SetVScrollPos(MyWnd->OutStruct->VScrollMax); 
     } else { 
         WriteChatColor(text,IRCChatColor); 

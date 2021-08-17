@@ -14,6 +14,9 @@ PreSetup("MQ2ItemDisplay");
 #include "ISXEQItemDisplay.h"
 #endif
 
+// thanks, finally, SOE. we'll leave this here for a while and eventually remove it
+#define DISABLE_TOOLTIP_TIMERS
+
 void Comment(PSPAWNINFO pChar, PCHAR szLine); 
 
 extern "C" {
@@ -320,6 +323,14 @@ public:
             }
 
             sprintf (out, "<BR><c \"#%s\">Spell Info for %s effect: %s<br>", cColour, cName, pSpell->Name);
+
+            if(This->ItemInfo && GetCXStr(This->ItemInfo, temp))
+            {
+                if(strstr(temp, out))
+                {
+                    return;
+                }
+            }
         }
 
         sprintf(temp, "ID: %04d&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;", pSpell->ID );
@@ -435,7 +446,7 @@ public:
     {
         PEQITEMWINDOW This=(PEQITEMWINDOW)this;
         PCONTENTS item=(PCONTENTS)This->pItem;
-        volatile PITEMINFO Item=item->Item;
+        volatile PITEMINFO Item=GetItemFromContents(item);
         CHAR out[MAX_STRING] = {0};
         CHAR temp[MAX_STRING] = {0};
         CHAR temp2[MAX_STRING] = {0};
@@ -515,7 +526,7 @@ public:
                     //Calculate Efficiency
                     INT dmgbonus = 0;
 
-                    if (GetCharInfo2()->Level > 27) { //bonus is 0 for anything below 28
+                    if (GetCharInfo2()->Level > 27 && This->ItemInfo) { //bonus is 0 for anything below 28
                         dmgbonus = GetDmgBonus(&This->ItemInfo);
                     }
 
@@ -553,7 +564,7 @@ public:
         */ 
 
         // Just in case...
-        if ( (!strstr(This->ItemInfo->Text,"(Combat)")) && Item->Proc.ProcRate > 0 )
+        if (This->ItemInfo && (!strstr(This->ItemInfo->Text,"(Combat)")) && Item->Proc.ProcRate > 0 )
         {
             sprintf(temp, "Proc rate Modifier: %d<BR>", Item->Proc.ProcRate );
             strcat(out,temp);
@@ -615,8 +626,7 @@ public:
 
         if (out[0]!=17) {
             strcat(out,"</c>");
-            CXSize Whatever;
-            ((CStmlWnd*)This->DisplayWnd)->AppendSTML(&Whatever, &out[0]);
+            ((CStmlWnd*)This->DisplayWnd)->AppendSTML(&out[0]);
         }
 
         // Ziggy - Items showing their spell details:
@@ -650,93 +660,11 @@ public:
     }
 };
 
-// CXWnd::DrawTooltipAtPoint(const CXStr &new, CXStr *old)
-class XWndHook
-{
-public:
-    VOID DrawTooltipAtPoint_Trampoline(const CXStr &, CXStr *);
-    VOID DrawTooltipAtPoint_Detour(const CXStr &New, CXStr *Old)
-    {
-        CHAR Temp[MAX_STRING]={0};
-        CHAR Temp2[MAX_STRING]={0};
-        PCONTENTS pItem=0;
-        CXWnd *pWnd=(CXWnd*)this;
-
-        if(GetParentWnd(pWnd)==(CXWnd*)pPotionBeltWnd)
-        {
-            STMLToPlainText(&pWnd->Tooltip->Text[0],Temp);
-            pItem=GetItemContentsByName(Temp);
-
-            if(pItem && pItem->Item->Clicky.TimerID)
-            {
-                int Secs=GetItemTimer(pItem);
-                if(Secs)
-                {
-                    int Mins=(Secs/60)%60;
-                    int Hrs=(Secs/3600);
-                    Secs=Secs%60;
-                    if(Hrs)
-                        sprintf(Temp2,"%d:%02d:%02d",Hrs,Mins,Secs);
-                    else
-                        sprintf(Temp2,"%d:%02d",Mins,Secs);
-                }
-                else
-                    strcpy(Temp2,"Ready");
-                sprintf(Temp,"%s (%s)",pItem->Item->Name,Temp2);
-                SetCXStr((PCXSTR*)&pWnd->Tooltip,Temp);
-            }
-        }
-
-        DrawTooltipAtPoint_Trampoline(New, Old);
-    }
-};
-
-class InvSlotWndHook
-{
-public:
-    VOID DrawTooltip_Trampoline(CXWnd *);
-    VOID DrawTooltip_Detour(CXWnd *pWindow)
-    {
-        CHAR Temp[MAX_STRING]={0};
-        CHAR Temp2[MAX_STRING]={0};
-        PCONTENTS pItem = 0;
-        
-        STMLToPlainText(&pWindow->Tooltip->Text[0],Temp);
-
-        pItem = GetItemContentsByName(Temp);
-
-        if(pItem && pItem->Item->Clicky.TimerID)
-        {
-            int Secs=GetItemTimer(pItem);
-            if(Secs)
-            {
-                int Mins=(Secs/60)%60;
-                int Hrs=(Secs/3600);
-                Secs=Secs%60;
-                if(Hrs)
-                    sprintf(Temp2,"%d:%02d:%02d",Hrs,Mins,Secs);
-                else
-                    sprintf(Temp2,"%d:%02d",Mins,Secs);
-            }
-            else
-                strcpy(Temp2,"Ready");
-
-            sprintf(Temp,"%s (%s)",pItem->Item->Name,Temp2);
-            SetCXStr((PCXSTR*)&pWindow->Tooltip,Temp);
-        }
-
-        DrawTooltip_Trampoline(pWindow);
-        return;
-    }
-};
-
 ItemDisplayHook::SEffectType ItemDisplayHook::eEffectType = None;
 bool ItemDisplayHook::bNoSpellTramp = false;
 
 DETOUR_TRAMPOLINE_EMPTY(VOID ItemDisplayHook::SetSpell_Trampoline(int SpellID,bool HasSpellDescr));
 DETOUR_TRAMPOLINE_EMPTY(VOID ItemDisplayHook::UpdateStrings_Trampoline());
-DETOUR_TRAMPOLINE_EMPTY(VOID XWndHook::DrawTooltipAtPoint_Trampoline(const CXStr &, CXStr *));
-DETOUR_TRAMPOLINE_EMPTY(VOID InvSlotWndHook::DrawTooltip_Trampoline(CXWnd *));
 
 #ifndef ISXEQ
 void Comment(PSPAWNINFO pChar, PCHAR szLine) 
@@ -793,15 +721,12 @@ PLUGIN_API VOID InitializePlugin(VOID)
     DebugSpewAlways("Initializing MQ2ItemDisplay");
 
     memset(&g_Contents, 0, sizeof(g_Contents));
-    g_Contents.Item = &g_Item;
+    g_Contents.Item1 = NULL;
+    g_Contents.Item2 = &g_Item;
     g_Item.ItemNumber = 0;
-
-    // Add commands, macro parameters, hooks, etc.
 
     EzDetour(CItemDisplayWnd__SetSpell,&ItemDisplayHook::SetSpell_Detour,&ItemDisplayHook::SetSpell_Trampoline);
     EzDetour(CItemDisplayWnd__UpdateStrings, &ItemDisplayHook::UpdateStrings_Detour, &ItemDisplayHook::UpdateStrings_Trampoline);
-    EzDetour(CXWnd__DrawTooltipAtPoint,&XWndHook::DrawTooltipAtPoint_Detour,&XWndHook::DrawTooltipAtPoint_Trampoline);
-    EzDetour(CInvSlotWnd__DrawTooltip, &InvSlotWndHook::DrawTooltip_Detour, &InvSlotWndHook::DrawTooltip_Trampoline);
 
     AddCommand("/inote",Comment); 
     AddCommand("/ireset",Ireset); 
@@ -813,11 +738,8 @@ PLUGIN_API VOID ShutdownPlugin(VOID)
 {
     DebugSpewAlways("Shutting down MQ2ItemDisplay");
 
-    // Remove commands, macro parameters, hooks, etc.
     RemoveDetour(CItemDisplayWnd__SetSpell);
     RemoveDetour(CItemDisplayWnd__UpdateStrings);
-    RemoveDetour(CXWnd__DrawTooltipAtPoint);
-    RemoveDetour(CInvSlotWnd__DrawTooltip);
 
     RemoveMQ2Data("DisplayItem");
     RemoveCommand("/ireset"); 

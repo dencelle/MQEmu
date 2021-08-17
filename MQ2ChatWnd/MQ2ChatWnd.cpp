@@ -41,7 +41,7 @@ private:
 public: 
     CMQChatWnd(CXStr *Template):CCustomWnd(Template) 
     { 
-        DebugSpew("CMQChatWnd()"); 
+        DebugSpew("CMQChatWnd()");
         SetWndNotification(CMQChatWnd); 
         InputBox=(CTextEntryWnd*)GetChildItem("CWChatInput"); 
         InputBox->WindowStyle|=0x800C0; 
@@ -52,7 +52,7 @@ public:
         OutStruct=(_CSIDLWND*)GetChildItem("CWChatOutput");
         OutWnd=(CXWnd*)OutputBox;
         OutBoxLines=0; 
-        *(DWORD*)&(((PCHAR)OutputBox)[EQ_CHAT_HISTORY_OFFSET])=400; 
+        *(DWORD*)&(((PCHAR)OutputBox)[EQ_CHAT_HISTORY_OFFSET])=0x190; 
         OutputBox->Clickable=1; 
         iCurrentCmd=-1;
     } 
@@ -64,8 +64,7 @@ public:
         if (pWnd==(CXWnd*)InputBox) 
         { 
             if (Message==XWM_HITENTER) 
-            { 
-                //CXSize Whatever; 
+            {  
                 char szBuffer[2048]; 
                 GetCXStr((PCXSTR)InputBox->InputText,szBuffer,2047); 
                 if (szBuffer[0]) 
@@ -84,7 +83,7 @@ public:
                     //MQToSTML(szBuffer,szProcessed,MAX_STRING);
                     //strcat(szProcessed,"<br>");
                     //CXStr NewText(szProcessed);
-                    //OutputBox->AppendSTML(&Whatever,NewText);
+                    //OutputBox->AppendSTML(NewText);
                     //if (bScrollDown) ((CXWnd*)MQChatWnd->OutputBox)->SetVScrollPos(MQChatWnd->OutputBox->VScrollMax);
                     SetCXStr(&InputBox->InputText,"");
                     if (szBuffer[0]=='/')
@@ -148,7 +147,7 @@ public:
         { 
             if (Message==XWM_CLOSE) 
             { 
-                Show=1; 
+                dShow=1; 
                 return 1; 
             } 
         } 
@@ -184,12 +183,11 @@ public:
             PCHAR* Fonts; 
         }; 
         FONTDATA* Fonts;            // font array structure 
-        CXStr* str;                 // contents of stml window 
-        DWORD* SelFont;     // selected font 
+        DWORD* SelFont;             // selected font 
 
         // get fonts structure -- this offset can be found by looking at 
         // SetChatfont which is called from the /chatfontsize function 
-        Fonts = (FONTDATA*)&(((char*)pWndMgr)[0x114]); 
+        Fonts = (FONTDATA*)&(((char*)pWndMgr)[EQ_CHAT_FONT_OFFSET]); 
 
         // check font array bounds and pointers 
         if (size<0 || size>=(int)Fonts->NumFonts) 
@@ -205,9 +203,9 @@ public:
         SelFont = (DWORD*)Fonts->Fonts[size]; 
 
         // Save the text, change the font, then restore the text 
-        ((CStmlWnd*)MQChatWnd->OutputBox)->GetSTMLText(str); 
+        CXStr str(((CStmlWnd*)MQChatWnd->OutputBox)->GetSTMLText()); 
         ((CXWnd*)MQChatWnd->OutputBox)->SetFont(SelFont); 
-        ((CStmlWnd*)MQChatWnd->OutputBox)->SetSTMLText(*str,1,0); 
+        ((CStmlWnd*)MQChatWnd->OutputBox)->SetSTMLText(str,1,0); 
         ((CStmlWnd*)MQChatWnd->OutputBox)->ForceParseNow(); 
         // scroll to bottom of chat window 
         DebugTry(((CXWnd*)MQChatWnd->OutputBox)->SetVScrollPos(MQChatWnd->OutputBox->VScrollMax)); 
@@ -461,7 +459,7 @@ PLUGIN_API DWORD OnWriteChatColor(PCHAR Line, DWORD Color, DWORD Filter)
             return 0; 
         } 
     } 
-    MQChatWnd->Show=1; 
+    MQChatWnd->dShow=1; 
     PFILTER pFilter=gpFilters; 
     while (pFilter) 
     { 
@@ -527,10 +525,9 @@ PLUGIN_API VOID OnPulse()
                 MQChatWnd->OutBoxLines-=Diff; 
                 Benchmark(bmStripFirstStmlLines,MQChatWnd->OutputBox->StripFirstSTMLLines(Diff)); 
             } 
-            CXSize Whatever; 
             for (DWORD N=0 ; N<ThisPulse ; N++) 
             { 
-                DebugTry(MQChatWnd->OutputBox->AppendSTML(&Whatever,pPendingChat->Text)); 
+                DebugTry(MQChatWnd->OutputBox->AppendSTML(pPendingChat->Text)); 
                 ChatBuffer *pNext=pPendingChat->pNext; 
                 delete pPendingChat; 
                 pPendingChat=pNext; 

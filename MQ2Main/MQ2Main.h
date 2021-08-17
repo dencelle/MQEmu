@@ -164,7 +164,7 @@ extern DWORD CountFrees;
 #define SetWndNotification(thisclass) \
 {\
     int (thisclass::*pfWndNotification)(CXWnd *pWnd, unsigned int Message, void *unknown)=&thisclass::WndNotification;\
-    SetvfTable(33,*(DWORD*)&pfWndNotification);\
+    SetvfTable(34,*(DWORD*)&pfWndNotification);\
 }
 
 #ifndef ISXEQ
@@ -381,6 +381,7 @@ EQLIB_API VOID ShutdownMQ2Pulse();
 EQLIB_API int CastRay(PSPAWNINFO,float y,float x,float z);
 EQLIB_API unsigned long GetFastTime(void);
 EQLIB_API char * __stdcall GetXtargetType(DWORD type);
+EQLIB_API DWORD EQGetTime();
 
 /* UTILITIES */
 EQLIB_API VOID ConvertCR(PCHAR Text);
@@ -425,6 +426,7 @@ EQLIB_API int FindMappableCommand(const char *name);
 EQLIB_API int GetLanguageIDByName(PCHAR szName);
 EQLIB_API PCHAR GetSpellNameByID(DWORD dwSpellID);
 EQLIB_API PSPELL GetSpellByName(PCHAR szName);
+EQLIB_API struct  _ITEMINFO *GetItemFromContents(struct _CONTENTS *c);
 #include "MQ2Inlines.h"
 
 
@@ -570,6 +572,8 @@ EQLIB_API DWORD       GetSkillIDFromName      (PCHAR name);
 EQLIB_API bool        InHoverState();
 EQLIB_API DWORD       GetGameState(VOID);
 EQLIB_API float       GetMeleeRange(class EQPlayer *,class EQPlayer *);
+EQLIB_API DWORD       GetSpellGemTimer(DWORD nGem);
+EQLIB_API bool        HasExpansion(DWORD nExpansion);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Functions that were built into commands and people used DoCommand to execute                  //

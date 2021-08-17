@@ -166,7 +166,7 @@ DETOUR_TRAMPOLINE_EMPTY(int CXWndManagerHook::RemoveWnd_Trampoline(class CXWnd *
 class CXMLSOMDocumentBaseHook
 {
 public:
-    int XMLRead(CXStr *A, CXStr *B, CXStr *C)
+    int XMLRead(CXStr *A, CXStr *B, CXStr *C, CXStr *D)
     {
         char Temp[256]={0};
         GetCXStr(C->Ptr,Temp,256);
@@ -176,16 +176,16 @@ public:
             if (GenerateMQUI())
             {
                 SetCXStr(&C->Ptr,"MQUI.xml");
-                int Ret=XMLRead_Trampoline(A,B,C);
+                int Ret=XMLRead_Trampoline(A,B,C,D);
                 DestroyMQUI();
                 return Ret;
             }
         }
-        return XMLRead_Trampoline(A,B,C);
+        return XMLRead_Trampoline(A,B,C,D);
     }
-    int XMLRead_Trampoline(CXStr *A, CXStr *B, CXStr *C);
+    int XMLRead_Trampoline(CXStr *A, CXStr *B, CXStr *C, CXStr *D);
 };
-DETOUR_TRAMPOLINE_EMPTY(int CXMLSOMDocumentBaseHook::XMLRead_Trampoline(CXStr *A, CXStr *B, CXStr *C)); 
+DETOUR_TRAMPOLINE_EMPTY(int CXMLSOMDocumentBaseHook::XMLRead_Trampoline(CXStr *A, CXStr *B, CXStr *C, CXStr *D)); 
 
 
 #ifndef ISXEQ
@@ -535,15 +535,15 @@ CXWnd *FindMQ2Window(PCHAR WindowName)
             unsigned long nPack=atoi(&WindowName[4]);
             if (nPack && nPack<=NUM_BANK_SLOTS)
             {
-                pPack=((PCHARINFO)pCharData)->Bank[nPack-1];
+                pPack=((PCHARINFO)pCharData)->pBankArray->Bank[nPack-1];
             }
         }
         else if (!strnicmp(WindowName,"pack",4))
         {
             unsigned long nPack=atoi(&WindowName[4]);
-            if (nPack && nPack<=8)
+            if (nPack && nPack<=10)
             {
-                pPack=GetCharInfo2()->Inventory.Pack[nPack-1];
+                pPack=GetCharInfo2()->pInventoryArray->Inventory.Pack[nPack-1];
             }
         }
         else if (!stricmp(WindowName,"enviro"))
@@ -1127,7 +1127,12 @@ int ItemNotify(int argc, char *argv[])
     PSPAWNINFO pChar = (PSPAWNINFO)pLocalPlayer;
 #endif
     PCHAR pNotification=&szArg2[0];
-    CInvSlot *pSlot=0;
+    EQINVSLOT *pSlot=NULL;
+    DWORD i;
+    PEQINVSLOTMGR pInvMgr=(PEQINVSLOTMGR)pInvSlotMgr;
+    int bagslot = -1;
+    int invslot = -1;
+    int type = -1;
 
     if (!stricmp(szArg1,"in"))
     { 
@@ -1138,13 +1143,16 @@ int ItemNotify(int argc, char *argv[])
             RETURN(0);
         }
 
+#if 0
         PCONTENTS pPack=0;
+        PCONTENTS pItem=0;
+        
         if (!strnicmp(szArg2,"bank",4))
         {
             unsigned long nPack=atoi(&szArg2[4]);
             if (nPack && nPack<=NUM_BANK_SLOTS)
             {
-                pPack=GetCharInfo()->Bank[nPack-1];
+                pPack=GetCharInfo()->pBankArray->Bank[nPack-1];
             }
         }
         else if (!strnicmp(szArg2,"sharedbank",10))
@@ -1152,15 +1160,15 @@ int ItemNotify(int argc, char *argv[])
             unsigned long nPack=atoi(&szArg2[10]);
             if (nPack && nPack<=2)
             {
-                pPack=GetCharInfo()->Bank[16+nPack-1];
+                pPack=GetCharInfo()->pSharedBankArray->SharedBank[nPack-1];
             }
         }
         else if (!strnicmp(szArg2,"pack",4))
         {
             unsigned long nPack=atoi(&szArg2[4]);
-            if (nPack && nPack<=8)
+            if (nPack && nPack<=10)
             {
-                pPack=GetCharInfo2()->Inventory.Pack[nPack-1];
+                pPack=GetCharInfo2()->pInventoryArray->Inventory.Pack[nPack-1];
             }
         }
         else if (!stricmp(szArg2,"enviro"))
@@ -1173,41 +1181,100 @@ int ItemNotify(int argc, char *argv[])
             WriteChatf("No item at '%s'",szArg2);
             RETURN(0);
         }
-        PEQCONTAINERWINDOW pWnd=FindContainerForContents(pPack);
-        if (!pWnd)
-        {
-            WriteChatf("No container at '%s' open",szArg2);
-            RETURN(0);
+        if (GetItemFromContents(pPack)->Type == ITEMTYPE_PACK) {
+            
+            unsigned long N = atoi(szArg3)-1;
+
+            if (N<GetItemFromContents(pPack)->Slots && pPack->pContentsArray) {
+                pItem =  pPack->pContentsArray->Contents[N];
+            }
+
+            if (pItem) {
+                unsigned long nSlot=FindInvSlotForContents(pItem);
+                PEQINVSLOTMGR pInvMgr=(PEQINVSLOTMGR)pInvSlotMgr;
+                pSlot = pInvMgr->SlotArray[nSlot];
+            }
         }
-        unsigned long nSlot=atoi(szArg3);
-        if (nSlot && nSlot <= 10)
-        {
-            PEQINVSLOTWND pSlotWnd=(PEQINVSLOTWND)pWnd->pSlots[nSlot-1];
-            pSlot=pInvSlotMgr->FindInvSlot(pSlotWnd->InvSlot);
+#endif
+        if (!strnicmp(szArg2,"bank",4)) {
+            invslot=atoi(&szArg2[4])-1;
+            bagslot=atoi(szArg3)-1;
+            type=1;
+        } else if (!strnicmp(szArg2,"sharedbank",10)) {
+            invslot=atoi(&szArg2[10])-1;
+            bagslot=atoi(szArg3)-1;
+            type=2;
+        } else if (!strnicmp(szArg2,"pack",4)) {
+            invslot=atoi(&szArg2[4])-1+23;
+            bagslot=atoi(szArg3)-1;
+            type=0;
         }
+        for (i=0;i<pInvMgr->TotalSlots;i++) {
+            pSlot = pInvMgr->SlotArray[i];
+            if ((pSlot->Valid) &&
+                (pSlot->pInvSlotWnd->WindowType == type) &&
+                (pSlot->pInvSlotWnd->InvSlotForBag == invslot) &&
+                (pSlot->pInvSlotWnd->BagSlot == bagslot)) {
+                break;
+            }
+        }
+        if (i == pInvMgr->TotalSlots) pSlot = NULL;
+
         pNotification=&szArg4[0];
-    }
-    else
-    {
+    } else {
         unsigned long Slot=atoi(szArg1);
         if (Slot==0)
         {
-            Slot=ItemSlotMap[strlwr(szArg1)];
+            Slot=ItemSlotMap[strlwr(szArg1)]; 
+            if (Slot<NUM_INV_SLOTS) {
+                DebugTry(pSlot=(EQINVSLOT *)pInvSlotMgr->FindInvSlot(Slot));
+            } else {
+                if (!strnicmp(szArg1, "loot", 4)) {
+                    invslot = atoi(szArg1+4) - 1;
+                    type = 11;
+                } else if (!strnicmp(szArg1, "enviro", 6)) {
+                    invslot = atoi(szArg1+6) - 1;
+                    type = 4;
+                } else if (!strnicmp(szArg1, "pack", 4)) {
+                    invslot = atoi(szArg1+4) - 1 + 23;
+                    type = 0;
+                } else if (!strnicmp(szArg1, "bank", 4)) {
+                    invslot = atoi(szArg1+4) - 1;
+                    type = 1;
+                } else if (!strnicmp(szArg1, "sharedbank", 10)) {
+                    invslot = atoi(szArg1+10) - 1;
+                    type = 2;
+                } else if (!strnicmp(szArg1, "trade", 5)) {
+                    invslot = atoi(szArg1+5) - 1;
+                    type = 3;
+                }
+                for (i=0;i<pInvMgr->TotalSlots;i++) {
+                    pSlot = pInvMgr->SlotArray[i];
+                    if ((pSlot->Valid) &&
+                        (pSlot->pInvSlotWnd->WindowType == type) &&
+                        (pSlot->pInvSlotWnd->InvSlotForBag == invslot)) {
+                        Slot = 1;
+                        break;
+                    }
+                }
+                if (i == pInvMgr->TotalSlots) Slot = 0;
+            }
         }
         if (Slot==0 && szArg1[0]!='0' && stricmp(szArg1,"charm"))
         {
             WriteChatf("Invalid item slot '%s'",szArg1);
             RETURN(0);
+        } else if (Slot && !pSlot) {
+            pSlot = pInvMgr->SlotArray[Slot];
         }
-        DebugTry(pSlot=pInvSlotMgr->FindInvSlot(Slot));
     }
     if (!pSlot)
     {
-        WriteChatf("Could not send notification to %s %s",szArg1,szArg2);
+        WriteChatf("SLOT IS NULL: Could not send notification to %s %s",szArg1,szArg2);
         RETURN(0);
     }
-    //DebugSpew("ItemNotify: Calling SendWndClick");
-    if (!SendWndClick2((CXWnd*)((PEQINVSLOT)pSlot)->pInvSlotWnd,pNotification))
+    DebugSpew("ItemNotify: Calling SendWndClick");
+    if (!pSlot->pInvSlotWnd || !SendWndClick2((CXWnd*)pSlot->pInvSlotWnd,pNotification))
     {
         WriteChatf("Could not send notification to %s %s",szArg1,szArg2);
     }
@@ -1227,13 +1294,15 @@ int ListItemSlots(int argc, char *argv[])
     unsigned long Count=0;
     WriteChatColor("List of available item slots");
     WriteChatColor("-------------------------");
-    for (unsigned long N = 0 ; N < 0x400 ; N++)
+    for (unsigned long N = 0 ; N < 0x800 ; N++)
         if (PEQINVSLOT pSlot=pMgr->SlotArray[N])
         {
             if (pSlot->pInvSlotWnd)
             {
-                WriteChatf("inv slot %d",pSlot->pInvSlotWnd->InvSlot);
+                WriteChatf("%d %d %d", N, pSlot->pInvSlotWnd->WindowType, pSlot->InvSlot);
                 Count++;
+            } else if (pSlot->InvSlot) {
+                WriteChatf("%d %d", N, pSlot->InvSlot);
             }
         }
         WriteChatf("%d available item slots",Count);

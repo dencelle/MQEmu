@@ -66,6 +66,11 @@ BOOL APIENTRY DllMain( HANDLE hModule,
             return TRUE;
         }
     }
+    if (!stricmp(szProcessName,"LaunchPad")) {
+        if (ul_reason_for_call == DLL_PROCESS_ATTACH) {
+            exit(-1);
+        }
+    }
     return TRUE;
 }
 
@@ -236,6 +241,13 @@ BOOL ParseINIFile(PCHAR lpINIPath)
 
 bool __cdecl MQ2Initialize()
 {
+    if(!InitOffsets())
+    {
+        DebugSpewAlways("InitOffsets returned false - thread aborted.");
+        g_Loaded = FALSE;
+        return false;
+    }
+
     if (!ParseINIFile(gszINIPath)) {
         DebugSpewAlways("ParseINIFile returned false - thread aborted.");
         g_Loaded = FALSE;
@@ -249,7 +261,10 @@ bool __cdecl MQ2Initialize()
     }
 
     ZeroMemory(szEQMappableCommands,sizeof(szEQMappableCommands));
-    for (i = 0 ; i < nEQMappableCommands && EQMappableCommandList[i] ; i++) {
+    for (i = 0 ; i < nEQMappableCommands; i++)
+    {
+        if((DWORD)EQMappableCommandList[i] == 0 || (DWORD)EQMappableCommandList[i] > (DWORD)__AC1_Data)
+            continue;
         szEQMappableCommands[i]=EQMappableCommandList[i];
     }
     gnNormalEQMappableCommands=i;
@@ -426,7 +441,7 @@ public:
         {
             if (Message==XWM_CLOSE)
             {
-                Show=1;
+                dShow=1;
                 return 1;
             }
         }
@@ -465,8 +480,7 @@ VOID AddNewsLine(PCHAR Line, DWORD Color)
     strcat(szProcessed,"<br>");
     CXStr NewText(szProcessed);
     ConvertItemTags(NewText,0);
-    CXSize Whatever;
-    pNewsWindow->OutputBox->AppendSTML(&Whatever,NewText);
+    pNewsWindow->OutputBox->AppendSTML(NewText);
     //    ((CXWnd*)pNewsWindow->OutputBox)->SetVScrollPos(0);
 
 }
@@ -492,7 +506,7 @@ VOID InsertMQ2News()
         DeleteMQ2NewsWindow();    
         return;
     }
-    AddNewsLine("If you need help, refer to README.CHM, the MacroQuest2 manual.",CONCOLOR_RED);
+    AddNewsLine("If you need help, refer to www.macroquest2.com/wiki",CONCOLOR_RED);
     AddNewsLine("Recent changes...",CONCOLOR_RED);
     CHAR szLine[MAX_STRING]={0};
     DWORD nLines=0;
@@ -537,12 +551,15 @@ VOID InjectDisable()
 #endif
 
 /* OTHER FUNCTIONS IMPORTED FROM EQ */
-#ifdef __CastRay
+#ifdef __CastRay_x
 FUNCTION_AT_ADDRESS(int CastRay(PSPAWNINFO,float y,float x,float z),__CastRay);
 #endif
-#ifdef Util__FastTime
+#ifdef Util__FastTime_x
 FUNCTION_AT_ADDRESS(unsigned long  GetFastTime(void),Util__FastTime);
 #endif
-#ifdef __GetXTargetType
+#ifdef __GetXTargetType_x
 FUNCTION_AT_ADDRESS(char * __stdcall GetXtargetType(DWORD type), __GetXTargetType);
+#endif
+#ifdef __EQGetTime_x
+FUNCTION_AT_ADDRESS(DWORD EQGetTime(), __EQGetTime);
 #endif
